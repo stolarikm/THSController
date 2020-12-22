@@ -1,35 +1,65 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
+import { LineChart } from 'react-native-chart-kit';
 import ModbusService from '../modbus/ModbusService'
+import PeriodicalPollingService from '../utils/PeriodicalPollingService';
 
 export default function SensorController() {
   const [running, setRunning] = useState(false);
   const [sensorInputs, setSensorInputs] = useState([]);
+  const [currentData, setCurrentData] = useState([]);
   const [data, setData] = useState([]);
+
 
   const onStart = () => {
     if (sensorInputs && sensorInputs.length > 0) {
       setRunning(true);
-      pollSensorsSequentially(sensorInputs);
+      PeriodicalPollingService.start(() => pollSensorsSequentially(sensorInputs), 5000);
     }
   };
   
   const onStop = () => {
+    PeriodicalPollingService.stop();
     setRunning(false);
   };
+
+  const getSensor = (id) => {
+    return data.find((item) => item.id === id);
+  }
+
+  useEffect(() => {
+    if (currentData && currentData.length > 0) {
+      var newData = [];
+      for (sensor of currentData) {
+        var currentSensor = getSensor(sensor.id);
+        newData.push({
+            id: sensor.id,
+            ip: sensor.ip,
+            values: currentSensor ? currentSensor.values.concat(sensor.value) : [sensor.value],
+          });
+      }
+      console.log(newData);
+      setData(newData);
+    }
+  }, [currentData]);
 
   const pollSensorsSequentially = async (sensors) => {
     if (sensors && sensors.length > 0) {
       var newData = [];
       for (sensor of sensors) {
-        var value = await ModbusService.readTemperature(sensor.ip);
+        var temperature = parseTemperature(await ModbusService.readTemperature(sensor.ip));
+        var time = new Date();
+        var value = {
+          time: time,
+          temperature: temperature
+        };
         newData.push({
           id: sensor.id,
           ip: sensor.ip,
-          temperature: parseTemperature(value),
+          value: value,
         });
       }
-      setData(newData);
+      setCurrentData(newData);
     }
   }
   
@@ -43,6 +73,24 @@ export default function SensorController() {
       }
     }
     return "No data";
+  };
+
+  const chartConfig = {
+    backgroundGradientFrom: "#1E2923",
+    backgroundGradientFromOpacity: 0,
+    backgroundGradientTo: "#08130D",
+    backgroundGradientToOpacity: 0.5,
+    color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
+    barPercentage: 0.5,
+  };
+
+  const chartData = {
+    labels: data.length > 0 && data[0].values.map((value) => value.time),  //TODO for now just first sensor
+    datasets: [
+      {
+        data: data.length > 0 && data[0].values.map((value) => value.temperature),
+      }
+    ],
   };
 
   return (
@@ -93,9 +141,16 @@ export default function SensorController() {
       </View>
       <FlatList
         data={data}
-        renderItem={({ item }) => <Text>IP: {item.ip} - Temperature: {item.temperature}</Text>}
+        renderItem={({ item }) => <Text>IP: {item.ip} - Temperature: {item.values[item.values.length - 1].temperature}</Text>}
         keyExtractor={rowData => rowData.id.toString()}
       />
+      {console.log(data.length > 0 && data[0].values.length)}
+      {data.length > 0 && data[0].values.length > 3 && <LineChart
+        data={chartData}
+        width={800}
+        height={220}
+        chartConfig={chartConfig}
+      />}
     </View>
   );
 }

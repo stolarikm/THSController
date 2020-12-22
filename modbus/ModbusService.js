@@ -8,7 +8,7 @@ export default class ModbusService {
             await ModbusProvider.disconnect();
             return value;
         } catch (error) {
-            console.log("Error reading temerature from sensor: " + error);
+            console.log("Error reading temperature from sensor: " + error);
         }
     };
 }
