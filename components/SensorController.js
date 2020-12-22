@@ -38,7 +38,6 @@ export default function SensorController() {
             values: currentSensor ? currentSensor.values.concat(sensor.value) : [sensor.value],
           });
       }
-      console.log(newData);
       setData(newData);
     }
   }, [currentData]);
@@ -75,8 +74,17 @@ export default function SensorController() {
         return value / 10;
       }
     }
-    return "No data";
+    return 0;
   };
+
+  const takeLast = (array, n) => {
+    if (array) {
+      if (array.length > n) {
+        return array.slice(array.length - n);
+      }
+      return array;
+    } 
+  }
 
   const chartConfig = {
     backgroundGradientFrom: "#1E2923",
@@ -88,12 +96,10 @@ export default function SensorController() {
   };
 
   const chartData = {
-    labels: data.length > 0 && data[0].values.map((value) => value.time),  //TODO for now just first sensor
-    datasets: [
-      {
-        data: data.length > 0 && data[0].values.map((value) => value.temperature),
-      }
-    ],
+    labels: data.length > 0 && takeLast(data[0].values.map((value) => value.time), 6), 
+    datasets: data.map((item) => {
+      return { data: takeLast(item.values.map((value) => value.temperature), 6) }
+    }),
   };
 
   return (
@@ -147,8 +153,7 @@ export default function SensorController() {
         renderItem={({ item }) => <Text>IP: {item.ip} - Temperature: {item.values[item.values.length - 1].temperature} °C</Text>}
         keyExtractor={rowData => rowData.id.toString()}
       />
-      {console.log(data.length > 0 && data[0].values.length > 3 && chartData)}
-      {data.length > 0 && data[0].values.length > 3 && <LineChart
+      {data.length > 0 && <LineChart
         data={chartData}
         width={400}
         height={220}
