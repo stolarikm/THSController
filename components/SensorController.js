@@ -14,7 +14,7 @@ export default function SensorController() {
   const onStart = () => {
     if (sensorInputs && sensorInputs.length > 0) {
       setRunning(true);
-      PeriodicalPollingService.start(() => pollSensorsSequentially(sensorInputs), 5000);
+      PeriodicalPollingService.start(() => pollSensorsSequentially(sensorInputs), 15000);
     }
   };
   
@@ -48,7 +48,7 @@ export default function SensorController() {
       var newData = [];
       for (sensor of sensors) {
         var temperature = parseTemperature(await ModbusService.readTemperature(sensor.ip));
-        var time = new Date();
+        var time = parseTime(new Date());
         var value = {
           time: time,
           temperature: temperature
@@ -63,13 +63,16 @@ export default function SensorController() {
     }
   }
   
+  const parseTime = (date) => {
+    return date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+  }
+
   const parseTemperature = (rowData) => {
     if (rowData && rowData[0] === "[") {
       var str = rowData.toString().substring(1, rowData.length - 1);
       var value = parseInt(str);
       if (!isNaN(value)) {
-        value = value / 10;
-        return value.toString() + " °C";
+        return value / 10;
       }
     }
     return "No data";
@@ -80,7 +83,7 @@ export default function SensorController() {
     backgroundGradientFromOpacity: 0,
     backgroundGradientTo: "#08130D",
     backgroundGradientToOpacity: 0.5,
-    color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
+    color: (opacity = 1) => `rgba(57, 26, 255, ${opacity})`,
     barPercentage: 0.5,
   };
 
@@ -141,13 +144,13 @@ export default function SensorController() {
       </View>
       <FlatList
         data={data}
-        renderItem={({ item }) => <Text>IP: {item.ip} - Temperature: {item.values[item.values.length - 1].temperature}</Text>}
+        renderItem={({ item }) => <Text>IP: {item.ip} - Temperature: {item.values[item.values.length - 1].temperature} °C</Text>}
         keyExtractor={rowData => rowData.id.toString()}
       />
-      {console.log(data.length > 0 && data[0].values.length)}
+      {console.log(data.length > 0 && data[0].values.length > 3 && chartData)}
       {data.length > 0 && data[0].values.length > 3 && <LineChart
         data={chartData}
-        width={800}
+        width={400}
         height={220}
         chartConfig={chartConfig}
       />}
