@@ -14,7 +14,7 @@ export default function SensorController() {
   const onStart = () => {
     if (sensorInputs && sensorInputs.length > 0) {
       setRunning(true);
-      PeriodicalPollingService.start(() => pollSensorsSequentially(sensorInputs), 15000);
+      PeriodicalPollingService.start(() => pollSensorsSequentially(sensorInputs), 7500);
     }
   };
   
@@ -46,7 +46,7 @@ export default function SensorController() {
     if (sensors && sensors.length > 0) {
       var newData = [];
       for (sensor of sensors) {
-        var temperature = parseTemperature(await ModbusService.readTemperature(sensor.ip));
+        var temperature = await ModbusService.readTemperature(sensor.ip);
         var time = parseTime(new Date());
         var value = {
           time: time,
@@ -65,17 +65,6 @@ export default function SensorController() {
   const parseTime = (date) => {
     return date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
   }
-
-  const parseTemperature = (rowData) => {
-    if (rowData && rowData[0] === "[") {
-      var str = rowData.toString().substring(1, rowData.length - 1);
-      var value = parseInt(str);
-      if (!isNaN(value)) {
-        return value / 10;
-      }
-    }
-    return 0;
-  };
 
   const takeLast = (array, n) => {
     if (array) {

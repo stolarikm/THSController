@@ -1,14 +1,47 @@
 import ModbusProvider from "./ModbusProvider";
 
 export default class ModbusService {
-    static async readTemperature(ip) {
+    static MAX_RETRIES = 3;
+    static RETRY_TIMEOUT = 250;
+
+    static checkRead(read) {
+        return read && 
+            read[0] === "[" && 
+            read[read.length - 1] === "]" &&
+            !isNaN(parseInt(read.toString().substring(1, read.length - 1)));
+    }
+
+    static parseTemperature = (read) => {
+        var str = read.toString().substring(1, read.length - 1);
+        var value = parseInt(str);
+        return value / 10;
+      };
+
+    static retry = (fn) => {
+        return new Promise(function (resolve, reject) {
+            setTimeout(function () {
+                resolve(fn);
+            }, this.RETRY_TIMEOUT);
+        });
+    }
+
+    static async readTemperature(ip, retryNumber) {
+        if (retryNumber && retryNumber > this.MAX_RETRIES) {
+            console.error("Max retry count reached, giving up");
+            return 0;
+        }
         try {
-            await ModbusProvider.connect(ip, 502);
+            var connectLog = await ModbusProvider.connect(ip, 502);
             var value = await ModbusProvider.read(0);
-            await ModbusProvider.disconnect();
-            return value;
+            var disconnectLog = await ModbusProvider.disconnect();
+            if (this.checkRead(value)) {
+                return this.parseTemperature(value);
+            } else {
+                console.warn("Retrying cause of error: " + connectLog + " / "+ value + " / " + disconnectLog);
+                return await this.retry(this.readTemperature(ip, retryNumber ? retryNumber + 1 : 1));
+            }
         } catch (error) {
-            console.log("Error reading temperature from sensor: " + error);
+            console.error("Error reading temperature from sensor: " + error);
         }
     };
 }

@@ -1,17 +1,44 @@
-import BackgroundTimer from 'react-native-background-timer';
+import BackgroundService from 'react-native-background-actions';
 
 export default class PeriodicalPollingService {
-    static intervalId = null;
 
-    static start = (func, interval) => {
-        if (!this.intervalId) {
-            this.intervalId = BackgroundTimer.setInterval(func, interval)
-        }
+    static timeoutTask = (fn, period) => {
+        return new Promise(function (resolve, reject) {
+            fn();
+            setTimeout(function () {
+              resolve("Done");
+            }, period);
+          });
+    }
+
+    static periodicTask = async (args) => {
+        // Example of an infinite loop task
+        const { fn, period } = args;
+        await new Promise( async (resolve) => {
+            while(BackgroundService.isRunning()) {
+                await this.timeoutTask(fn, period);
+            }
+        });
     };
 
-    static stop() {
-        if (this.intervalId) {
-            BackgroundTimer.clearInterval(this.intervalId);
-        } 
+    static start = async (func, interval) => {
+        var opts = {
+            taskName: 'THS Controller',
+            taskTitle: 'Monitoring sensors',
+            taskDesc: 'Tap to open the controller',
+            taskIcon: {
+                name: 'ic_launcher',
+                type: 'mipmap',
+            },
+            parameters: {
+                fn: func,
+                period: interval,
+            },
+        };
+        await BackgroundService.start(this.periodicTask, opts);
+    };
+
+    static async stop() {
+        await BackgroundService.stop();
     }
 }
