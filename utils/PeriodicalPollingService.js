@@ -12,7 +12,6 @@ export default class PeriodicalPollingService {
     }
 
     static periodicTask = async (args) => {
-        // Example of an infinite loop task
         const { fn, period } = args;
         await new Promise( async (resolve) => {
             while(BackgroundService.isRunning()) {

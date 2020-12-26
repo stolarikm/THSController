@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Button, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
-import { LineChart } from 'react-native-chart-kit';
+import { Button, FlatList, StyleSheet, Text, TextInput, View, Dimensions } from 'react-native';
+import { LineChart } from 'react-native-charts-wrapper';
 import ModbusService from '../modbus/ModbusService'
 import PeriodicalPollingService from '../utils/PeriodicalPollingService';
 
@@ -84,10 +84,14 @@ export default function SensorController() {
     barPercentage: 0.5,
   };
 
+  const getLabels = (values) => {
+    return values.map((value, index) => index === 0 || index === values.length - 1 ? value.time : "");
+  };
+
   const chartData = {
-    labels: data.length > 0 && takeLast(data[0].values.map((value) => value.time), 6), 
+    labels: data.length > 0 && getLabels(data[0].values), 
     datasets: data.map((item) => {
-      return { data: takeLast(item.values.map((value) => value.temperature), 6) }
+      return { data: item.values.map((value) => value.temperature) }
     }),
   };
 
@@ -142,12 +146,13 @@ export default function SensorController() {
         renderItem={({ item }) => <Text>IP: {item.ip} - Temperature: {item.values[item.values.length - 1].temperature} °C</Text>}
         keyExtractor={rowData => rowData.id.toString()}
       />
-      {data.length > 0 && <LineChart
-        data={chartData}
-        width={400}
-        height={220}
-        chartConfig={chartConfig}
-      />}
+      {data.length > 0 && 
+          <LineChart style={styles.chart}
+            data={{dataSets: data.map((item) => {
+              return { label: item.ip, values: item.values.map((value) => value.temperature) };
+            }),
+          }}
+          />}
     </View>
   );
 }
@@ -158,5 +163,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  chart: {
+    flex: 1,
+    width: 400,
   }
 });

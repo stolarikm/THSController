@@ -2,7 +2,7 @@ import ModbusProvider from "./ModbusProvider";
 
 export default class ModbusService {
     static MAX_RETRIES = 3;
-    static RETRY_TIMEOUT = 250;
+    static RETRY_TIMEOUT = 1000;
 
     static checkRead(read) {
         return read && 
@@ -37,7 +37,7 @@ export default class ModbusService {
             if (this.checkRead(value)) {
                 return this.parseTemperature(value);
             } else {
-                console.warn("Retrying cause of error: " + connectLog + " / "+ value + " / " + disconnectLog);
+                console.warn("Retrying cause of error: " + connectLog + " / "+ value + " / " + disconnectLog + new Date());
                 return await this.retry(this.readTemperature(ip, retryNumber ? retryNumber + 1 : 1));
             }
         } catch (error) {
