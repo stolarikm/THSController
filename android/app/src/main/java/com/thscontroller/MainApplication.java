@@ -6,6 +6,7 @@ import android.net.Uri;
 
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.oblador.vectoricons.VectorIconsPackage;
 import com.github.wuxudong.rncharts.MPAndroidChartPackage;
 import com.reactnativecommunity.webview.RNCWebViewPackage;
 import com.ocetnik.timer.BackgroundTimerPackage;
