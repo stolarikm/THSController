@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Dimensions } from 'react-native';
+import { StyleSheet, View, Dimensions, processColor } from 'react-native';
 import { TextInput, Button, Card, Title, Paragraph } from 'react-native-paper';
 import { LineChart } from 'react-native-charts-wrapper';
 import ModbusService from '../modbus/ModbusService'
@@ -23,7 +23,7 @@ export default function SensorController() {
       PeriodicalPollingService.start(() => pollSensorsSequentially(sensorInputs), 7500);
     }
   };
-  
+
   const onStop = () => {
     PeriodicalPollingService.stop();
     setRunning(false);
@@ -39,10 +39,10 @@ export default function SensorController() {
       for (sensor of currentData) {
         var currentSensor = getSensor(sensor.id);
         newData.push({
-            id: sensor.id,
-            ip: sensor.ip,
-            values: currentSensor ? currentSensor.values.concat(sensor.value) : [sensor.value],
-          });
+          id: sensor.id,
+          ip: sensor.ip,
+          values: currentSensor ? currentSensor.values.concat(sensor.value) : [sensor.value],
+        });
       }
       setData(newData);
     }
@@ -67,9 +67,18 @@ export default function SensorController() {
       setCurrentData(newData);
     }
   }
-  
+
   const parseTime = (date) => {
-    return date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+    return date.toTimeString().split(' ')[0];
+  }
+
+  const lineConfig = {
+    lineWidth: 2,
+    drawCircleHole: false,
+    drawCircles: false,
+    circleRadius: 0,
+    drawValues: false,
+    color: processColor('#1976d2'),
   }
 
   return (
@@ -95,7 +104,7 @@ export default function SensorController() {
           })}
           <View style={{ flexDirection: "row", marginTop: 5 }}>
             <Button
-              style={{margin: 5}}
+              style={{ margin: 5 }}
               mode='contained'
               disabled={running}
               onPress={() => {
@@ -105,13 +114,13 @@ export default function SensorController() {
               }}
             >+</Button>
             <Button
-              style={{margin: 5}}
+              style={{ margin: 5 }}
               mode='contained'
               disabled={running}
               onPress={() => onStart()}
             >Start</Button>
             <Button
-              style={{margin: 5}}
+              style={{ margin: 5 }}
               mode='contained'
               disabled={!running}
               onPress={() => onStop()}
@@ -132,16 +141,23 @@ export default function SensorController() {
             );
           })}
         </View>
-        <View style={{height: isPortrait ? 250 : screenHeight, width: screenWidth}}>
-            <LineChart
-              legend={{enabled: false}}
-              chartDescription={{text: ''}}
-              style={styles.chart}
-              data={{dataSets: data.map((item) => {
-                  return { label: item.ip, values: item.values.map((value) => value.temperature) };
-                }),
-              }}
-            />
+        <View style={{ height: isPortrait ? 250 : screenHeight, width: screenWidth }}>
+          <LineChart
+            marker={{ enabled: true, digits: 1 }}
+            xAxis={{
+              valueFormatter: data && data.length > 0 ? data[0].values.map((item) => item.time) : [],
+              drawLabels: true,
+              position: "BOTTOM",
+            }}
+            legend={{ enabled: false }}
+            chartDescription={{ text: '' }}
+            style={styles.chart}
+            data={{
+              dataSets: data.map((item) => {
+                return { config: lineConfig, label: item.ip, values: item.values.map((value) => value.temperature) };
+              }),
+            }}
+          />
         </View>
       </View>
     </View>
