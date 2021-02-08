@@ -1,27 +1,39 @@
-import React, { useEffect } from 'react';
-import {StatusBar} from 'react-native';
-import SensorController from './components/SensorController';
-import { DefaultTheme, Provider as PaperProvider, Appbar } from 'react-native-paper';
+import React from 'react';
 
-const theme = {
-  ...DefaultTheme,
-  colors: {
-    ...DefaultTheme.colors,
-    primary: '#1976d2',
-  },
-};
+import { createAppContainer } from 'react-navigation';  
+import { createMaterialBottomTabNavigator } from 'react-navigation-material-bottom-tabs'; 
+import Icon from 'react-native-vector-icons/MaterialIcons'; 
+import Home from './screens/Home';
+import Settings from './screens/Settings';
+import { View } from 'react-native';
 
-export default function App() {
-  useEffect(() => {
-    StatusBar.setBackgroundColor('#005cb2');
-  }, []);
+const TabNavigator = createMaterialBottomTabNavigator(  
+  {  
+      Home: { screen: Home,  
+          navigationOptions:{  
+              tabBarLabel:'Home',  
+              tabBarIcon: ({ tintColor }) => (  
+                  <View>  
+                      <Icon style={[{color: tintColor}]} size={25} name={'home'}/>  
+                  </View>),  
+          }  
+      },  
+      Config: { screen: Settings,  
+          navigationOptions:{  
+              tabBarLabel:'Settings',  
+              tabBarIcon: ({ tintColor }) => (  
+                  <View>  
+                      <Icon style={[{color: tintColor}]} size={25} name={'settings'}/>  
+                  </View>),  
+          }  
+      },  
+  },  
+  {  
+    initialRouteName: "Home",  
+    activeColor: '#f0edf6',  
+    inactiveColor: '#90caf9',  
+    barStyle: { backgroundColor: '#1976d2' },  
+  },  
+);
 
-  return (
-    <PaperProvider theme={theme}>
-      <Appbar.Header>
-        <Appbar.Content title="THS Controller" subtitle="Temperature and humidity sensor controller" />
-      </Appbar.Header>
-      <SensorController />
-    </PaperProvider>
-  );
-}
+export default createAppContainer(TabNavigator);
