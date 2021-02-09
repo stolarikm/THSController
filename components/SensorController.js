@@ -5,6 +5,7 @@ import { LineChart } from 'react-native-charts-wrapper';
 import ModbusService from '../modbus/ModbusService'
 import PeriodicalPollingService from '../utils/PeriodicalPollingService';
 import { useOrientation } from '../hooks/useOrientation';
+import firestore from '@react-native-firebase/firestore';
 
 export default function SensorController() {
   const [running, setRunning] = useState(false);
@@ -58,14 +59,23 @@ export default function SensorController() {
           time: time,
           temperature: temperature
         };
-        newData.push({
+        var data = {
           id: sensor.id,
           ip: sensor.ip,
           value: value,
-        });
+        };
+        newData.push(data);
+        upload(data);
       }
       setCurrentData(newData);
     }
+  }
+
+  const upload = (data) => {
+    firestore()
+        .collection("readings")
+        .doc()
+        .set(data);
   }
 
   const parseTime = (date) => {

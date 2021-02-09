@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "887757959032",
+    "project_id": "thscontroller",
+    "storage_bucket": "thscontroller.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:887757959032:android:a9f577032baff969eb628d",
+        "android_client_info": {
+          "package_name": "com.thscontroller"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "887757959032-5hr0lkq3hbso47ttgj81r3ruvrtm89u0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBADvjoNVYUFomfhGcasmhgoCTpFlGkDMk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "887757959032-5hr0lkq3hbso47ttgj81r3ruvrtm89u0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
