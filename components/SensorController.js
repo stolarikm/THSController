@@ -8,20 +8,29 @@ import { useOrientation } from '../hooks/useOrientation';
 import firestore from '@react-native-firebase/firestore';
 
 export default function SensorController() {
-  const [running, setRunning] = useState(false);
   const [sensorInputs, setSensorInputs] = useState([]);
-  const [currentData, setCurrentData] = useState([]);
-  const [data, setData] = useState([]);
+  const [readings, setReadings] = useState([]);
+  const [isRunning, setRunning] = useState(PeriodicalPollingService.isRunning());
 
   const isPortrait = useOrientation();
   var screenWidth = Dimensions.get('window').width;
   var screenHeight = Dimensions.get('window').height;
 
+  useEffect(() => {
+    var unsubscribe = firestore().collection("readings")
+      .onSnapshot((snapshot) => {
+        var snapshotData = [];
+        snapshot.forEach((doc) => snapshotData.push(doc.data()));
+        setReadings(snapshotData);
+      });
+      //cleanup
+      return unsubscribe;
+  }, []);
 
   const onStart = () => {
     if (sensorInputs && sensorInputs.length > 0) {
+      PeriodicalPollingService.start(() => pollSensorsSequentially(sensorInputs), 15000);
       setRunning(true);
-      PeriodicalPollingService.start(() => pollSensorsSequentially(sensorInputs), 7500);
     }
   };
 
@@ -30,44 +39,22 @@ export default function SensorController() {
     setRunning(false);
   };
 
-  const getSensor = (id) => {
-    return data.find((item) => item.id === id);
-  }
-
-  useEffect(() => {
-    if (currentData && currentData.length > 0) {
-      var newData = [];
-      for (sensor of currentData) {
-        var currentSensor = getSensor(sensor.id);
-        newData.push({
-          id: sensor.id,
-          ip: sensor.ip,
-          values: currentSensor ? currentSensor.values.concat(sensor.value) : [sensor.value],
-        });
-      }
-      setData(newData);
-    }
-  }, [currentData]);
-
   const pollSensorsSequentially = async (sensors) => {
     if (sensors && sensors.length > 0) {
-      var newData = [];
+      var data = { 
+        time: parseTime(new Date()),
+        devices: []
+      };
       for (sensor of sensors) {
         var temperature = await ModbusService.readTemperature(sensor.ip);
-        var time = parseTime(new Date());
-        var value = {
-          time: time,
-          temperature: temperature
-        };
-        var data = {
+        var sensorData = {
           id: sensor.id,
           ip: sensor.ip,
-          value: value,
+          value: temperature,
         };
-        newData.push(data);
-        upload(data);
+        data.devices.push(sensorData);
       }
-      setCurrentData(newData);
+      upload(data);
     }
   }
 
@@ -80,6 +67,20 @@ export default function SensorController() {
 
   const parseTime = (date) => {
     return date.toTimeString().split(' ')[0];
+  }
+
+  const getSensorIps = () => {
+    var ips = new Set();
+    readings.forEach(reading => reading.devices.forEach(device => ips.add(device.ip)));
+    return ips;
+  }
+
+  const getReadings = (ip) => {
+    var read = readings
+      .filter(reading => reading.devices.some(device => device.ip === ip))
+      .map(reading => reading.devices.filter(device => device.ip === ip)[0].value); //TODO fix [0]
+    console.log("SYNC", ip, read);
+    return read;
   }
 
   const lineConfig = {
@@ -103,7 +104,7 @@ export default function SensorController() {
                 label='IP address'
                 key={element.id}
                 value={element.ip}
-                disabled={running}
+                disabled={isRunning}
                 onChangeText={text => {
                   let newSensorsInputs = [...sensorInputs];
                   newSensorsInputs[index] = { id: index, ip: text };
@@ -116,7 +117,7 @@ export default function SensorController() {
             <Button
               style={{ margin: 5 }}
               mode='contained'
-              disabled={running}
+              disabled={isRunning}
               onPress={() => {
                 let newSensorsInputs = [...sensorInputs];
                 newSensorsInputs.push({ id: sensorInputs.length, ip: "" });
@@ -126,13 +127,13 @@ export default function SensorController() {
             <Button
               style={{ margin: 5 }}
               mode='contained'
-              disabled={running}
+              disabled={isRunning}
               onPress={() => onStart()}
             >Start</Button>
             <Button
               style={{ margin: 5 }}
               mode='contained'
-              disabled={!running}
+              disabled={!isRunning}
               onPress={() => onStop()}
             >Stop</Button>
           </View>
@@ -140,11 +141,11 @@ export default function SensorController() {
       </View>
       <View>
         <View style={{ flexDirection: "row", marginTop: 5 }}>
-          {currentData.map((element) => {
+          {readings && readings.length > 0 && readings[readings.length - 1].devices.map((element) => {
             return (
               <Card key={element.id}>
                 <Card.Content>
-                  <Title>{element.value.temperature} °C</Title>
+                  <Title>{element.value} °C</Title>
                   <Paragraph>{element.ip}</Paragraph>
                 </Card.Content>
               </Card>
@@ -155,7 +156,7 @@ export default function SensorController() {
           <LineChart
             marker={{ enabled: true, digits: 1 }}
             xAxis={{
-              valueFormatter: data && data.length > 0 ? data[0].values.map((item) => item.time) : [],
+              valueFormatter: readings && readings.length > 0 ? readings.map((reading) => reading.time) : [],
               drawLabels: true,
               position: "BOTTOM",
             }}
@@ -163,8 +164,8 @@ export default function SensorController() {
             chartDescription={{ text: '' }}
             style={styles.chart}
             data={{
-              dataSets: data.map((item) => {
-                return { config: lineConfig, label: item.ip, values: item.values.map((value) => value.temperature) };
+              dataSets: [...getSensorIps()].map((ip) => {
+                return { config: lineConfig, label: ip, values: getReadings(ip) };
               }),
             }}
           />

@@ -37,6 +37,10 @@ export default class PeriodicalPollingService {
         await BackgroundService.start(this.periodicTask, opts);
     };
 
+    static isRunning() {
+        return BackgroundService.isRunning();
+    }
+
     static async stop() {
         await BackgroundService.stop();
     }
