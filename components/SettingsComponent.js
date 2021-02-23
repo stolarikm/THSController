@@ -21,6 +21,7 @@ export default function SettingsComponent() {
                   let newSensorsInputs = [...sensorInputs];
                   newSensorsInputs[index] = { id: index, ip: text };
                   setSensorInputs(newSensorsInputs);
+                  global.sensorInputs = newSensorsInputs;
                 }}
               />
             );
@@ -33,6 +34,7 @@ export default function SettingsComponent() {
                 let newSensorsInputs = [...sensorInputs];
                 newSensorsInputs.push({ id: sensorInputs.length, ip: "" });
                 setSensorInputs(newSensorsInputs);
+                global.sensorInputs = newSensorsInputs;
               }}
             >+</Button>
           </View>

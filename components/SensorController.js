@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Dimensions, processColor } from 'react-native';
-import { TextInput, Button, Card, Title, Paragraph } from 'react-native-paper';
+import { Button, Card, Title, Paragraph } from 'react-native-paper';
 import { LineChart } from 'react-native-charts-wrapper';
 import ModbusService from '../modbus/ModbusService'
 import PeriodicalPollingService from '../utils/PeriodicalPollingService';
@@ -8,7 +8,6 @@ import { useOrientation } from '../hooks/useOrientation';
 import firestore from '@react-native-firebase/firestore';
 
 export default function SensorController() {
-  const [sensorInputs, setSensorInputs] = useState([]);
   const [readings, setReadings] = useState([]);
   const [isRunning, setRunning] = useState(PeriodicalPollingService.isRunning());
 
@@ -17,6 +16,7 @@ export default function SensorController() {
   var screenHeight = Dimensions.get('window').height;
 
   useEffect(() => {
+    global.sensorInputs = [];
     var unsubscribe = firestore().collection("readings")
       .onSnapshot((snapshot) => {
         var snapshotData = [];
@@ -28,8 +28,8 @@ export default function SensorController() {
   }, []);
 
   const onStart = () => {
-    if (sensorInputs && sensorInputs.length > 0) {
-      PeriodicalPollingService.start(() => pollSensorsSequentially(sensorInputs), 15000);
+    if (global.sensorInputs && global.sensorInputs.length > 0) {
+      PeriodicalPollingService.start(() => pollSensorsSequentially(global.sensorInputs), 15000);
       setRunning(true);
     }
   };
@@ -40,6 +40,7 @@ export default function SensorController() {
   };
 
   const pollSensorsSequentially = async (sensors) => {
+    console.log(sensors);
     if (sensors && sensors.length > 0) {
       var data = { 
         time: parseTime(new Date()),
@@ -79,7 +80,7 @@ export default function SensorController() {
     var read = readings
       .filter(reading => reading.devices.some(device => device.ip === ip))
       .map(reading => reading.devices.filter(device => device.ip === ip)[0].value); //TODO fix [0]
-    console.log("SYNC", ip, read);
+    console.log("SYNC...", read);
     return read;
   }
 
@@ -96,34 +97,7 @@ export default function SensorController() {
     <View style={styles.container}>
       <View style={{ margin: 10, flex: 1 }}>
         <View>
-          {sensorInputs.map((element, index) => {
-            return (
-              <TextInput
-                mode='outlined'
-                placeholder='192.168.0.68'
-                label='IP address'
-                key={element.id}
-                value={element.ip}
-                disabled={isRunning}
-                onChangeText={text => {
-                  let newSensorsInputs = [...sensorInputs];
-                  newSensorsInputs[index] = { id: index, ip: text };
-                  setSensorInputs(newSensorsInputs);
-                }}
-              />
-            );
-          })}
           <View style={{ flexDirection: "row", marginTop: 5 }}>
-            <Button
-              style={{ margin: 5 }}
-              mode='contained'
-              disabled={isRunning}
-              onPress={() => {
-                let newSensorsInputs = [...sensorInputs];
-                newSensorsInputs.push({ id: sensorInputs.length, ip: "" });
-                setSensorInputs(newSensorsInputs);
-              }}
-            >+</Button>
             <Button
               style={{ margin: 5 }}
               mode='contained'
