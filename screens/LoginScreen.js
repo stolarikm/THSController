@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import { StatusBar, View, StyleSheet, Button } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StatusBar, View, StyleSheet, Button, Text } from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
-import { DefaultTheme, Provider as PaperProvider, Appbar } from 'react-native-paper';
+import { DefaultTheme, Provider as PaperProvider, Appbar, TextInput } from 'react-native-paper';
 
 const theme = {
   ...DefaultTheme,
@@ -14,6 +14,7 @@ const theme = {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    flexDirection: 'row',
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
@@ -26,6 +27,11 @@ export default function LoginScreen({navigation}) {
     NavigationBar.setColor('#005cb2');
   }, []);
 
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
+  const [registering, setRegistering] = useState(false);
+
   return (
     <PaperProvider theme={theme}>
       <Appbar.Header>
@@ -33,17 +39,57 @@ export default function LoginScreen({navigation}) {
       </Appbar.Header>
 
       <View style={styles.container}>
-        <View style={{ margin: 10, flex: 1, width: 200 }}>
-          <View style={{ flexDirection: "row", marginTop: 5 }}>
-            <Button
-              title="Log in"
-              style={{ margin: 5 }}
-              mode='contained'
-              onPress={() => {
-                navigation.replace('BottomDrawerNavigator');
-              }}
-            >Log in</Button>
+        <View style={{ flex: 1, marginLeft: 50, marginRight: 50 }}>
+          <TextInput
+            style={{marginBottom: 20}}
+            label='Email'
+            value={email}
+            onChangeText={text => setEmail(text)}
+          />
+          <TextInput
+            style={{marginBottom: 20}}
+            secureTextEntry={true}
+            label='Password'
+            value={password}
+            onChangeText={text => setPassword(text)}
+          />
+          {registering && 
+            <TextInput
+              style={{marginBottom: 20}}
+              secureTextEntry={true}
+              label='Repeat password'
+              value={repeatPassword}
+              onChangeText={text => setRepeatPassword(text)}
+            />
+          }
+          <View style={{ alignItems: "center" }}>
+            <Text style={{color: '#1976d2', marginBottom: 20}}
+              onPress={() => setRegistering(!registering)}>
+              {registering ? "Already have an account" : "Create new account"}
+            </Text>
           </View>
+          {registering && 
+            <View style={{marginLeft: 60, marginRight: 60}}>
+              <Button
+                title="Register"
+                style={{ margin: 5 }}
+                onPress={() => {
+                  navigation.replace('BottomDrawerNavigator');
+                }}
+              >Log in</Button>
+            </View>
+          }
+          {!registering && 
+            <View style={{marginLeft: 60, marginRight: 60}}>
+              <Button
+                title="Log in"
+                style={{ margin: 5 }}
+                onPress={() => {
+                  navigation.replace('BottomDrawerNavigator');
+                }}
+              >Log in</Button>
+            </View>
+          }
         </View>
       </View>
     
