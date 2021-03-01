@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StatusBar, View, StyleSheet, Button, Text } from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
 import { DefaultTheme, Provider as PaperProvider, Appbar, TextInput } from 'react-native-paper';
+import auth from '@react-native-firebase/auth';
 
 const theme = {
   ...DefaultTheme,
@@ -31,6 +32,24 @@ export default function LoginScreen({navigation}) {
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
   const [registering, setRegistering] = useState(false);
+  const [error, setError] = useState("");
+
+  const parseError = (text) => {
+    var from = text.lastIndexOf('[') + 1;
+    var to = text.lastIndexOf(']');
+    return text.substring(from, to);
+  }
+
+  const register = (login, password) => {
+    auth()
+      .createUserWithEmailAndPassword(login, password)
+      .then(() => {
+        navigation.replace('BottomDrawerNavigator');
+      })
+      .catch(error => {
+        setError(parseError(error.message));
+    });
+  }
 
   return (
     <PaperProvider theme={theme}>
@@ -62,6 +81,11 @@ export default function LoginScreen({navigation}) {
               onChangeText={text => setRepeatPassword(text)}
             />
           }
+          {error !== "" && <View style={{ alignItems: "center" }}>
+            <Text style={{color: theme.colors.error, marginBottom: 20}}>
+              {error}
+            </Text>
+          </View>}
           <View style={{ alignItems: "center" }}>
             <Text style={{color: '#1976d2', marginBottom: 20}}
               onPress={() => setRegistering(!registering)}>
@@ -73,15 +97,13 @@ export default function LoginScreen({navigation}) {
               <Button
                 title="Register"
                 style={{ margin: 5 }}
-                onPress={() => {
-                  navigation.replace('BottomDrawerNavigator');
-                }}
+                onPress={() => register(email, password)}
               >Log in</Button>
             </View>
           }
           {!registering && 
             <View style={{marginLeft: 60, marginRight: 60}}>
-              <Button
+              <Button 
                 title="Log in"
                 style={{ margin: 5 }}
                 onPress={() => {
