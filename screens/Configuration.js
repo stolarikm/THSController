@@ -3,6 +3,7 @@ import {StatusBar} from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
 import SettingsComponent from '../components/SettingsComponent';
 import { DefaultTheme, Provider as PaperProvider, Appbar } from 'react-native-paper';
+import auth from '@react-native-firebase/auth';
 
 const theme = {
   ...DefaultTheme,
@@ -18,10 +19,12 @@ export default function Configuration() {
     NavigationBar.setColor('#005cb2');
   }, []);
 
+  const user = auth().currentUser;
+
   return (
     <PaperProvider theme={theme}>
       <Appbar.Header>
-        <Appbar.Content title="Settings" />
+        <Appbar.Content title="Settings" subtitle={user ? user.email : ""}/>
       </Appbar.Header>
       <SettingsComponent />
     </PaperProvider>

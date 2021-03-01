@@ -60,7 +60,8 @@ export default function LoginScreen({navigation}) {
   }
 
   const register = (login, password) => {
-    if (!isValid()) {
+    navigation.replace('BottomDrawerNavigator');
+    /*if (!isValid()) {
       return;
     }
     auth()
@@ -70,7 +71,7 @@ export default function LoginScreen({navigation}) {
       })
       .catch(error => {
         setError(parseError(error.message));
-    });
+    });*/
   }
 
   const login = (login, password) => {
