@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { isValidElement, useEffect, useState } from 'react';
 import { StatusBar, View, StyleSheet, Button, Text } from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
 import { DefaultTheme, Provider as PaperProvider, Appbar, TextInput } from 'react-native-paper';
@@ -35,16 +35,53 @@ export default function LoginScreen({navigation}) {
   const [error, setError] = useState("");
 
   const parseError = (text) => {
-    var from = text.lastIndexOf('[') + 1;
-    var to = text.lastIndexOf(']');
-    return text.substring(from, to);
+    var from = text.indexOf(']') + 1;
+    return text.substring(from).trim();
+  }
+
+  const isValid = () => {
+    if (!email) {
+      setError("Fill your email");
+      return false;
+    }
+    if (!password) {
+      setError("Fill your password");
+      return false;
+    }
+    if (registering && !repeatPassword) {
+      setError("Fill your repeated password");
+      return false;
+    }
+    if (registering && repeatPassword !== password) {
+      setError("Repeated password does not match password");
+      return false;
+    }
+    return true;
   }
 
   const register = (login, password) => {
+    if (!isValid()) {
+      return;
+    }
     auth()
       .createUserWithEmailAndPassword(login, password)
       .then(() => {
         navigation.replace('BottomDrawerNavigator');
+      })
+      .catch(error => {
+        setError(parseError(error.message));
+    });
+  }
+
+  const login = (login, password) => {
+    if (!isValid()) {
+      return;
+    }
+    auth()
+      .signInWithEmailAndPassword(login, password)
+      .then(() => {
+        navigation.replace('BottomDrawerNavigator');
+        setError("");
       })
       .catch(error => {
         setError(parseError(error.message));
@@ -88,7 +125,10 @@ export default function LoginScreen({navigation}) {
           </View>}
           <View style={{ alignItems: "center" }}>
             <Text style={{color: '#1976d2', marginBottom: 20}}
-              onPress={() => setRegistering(!registering)}>
+              onPress={() => {
+                setRegistering(!registering);
+                setError("");
+              }}>
               {registering ? "Already have an account" : "Create new account"}
             </Text>
           </View>
@@ -106,9 +146,7 @@ export default function LoginScreen({navigation}) {
               <Button 
                 title="Log in"
                 style={{ margin: 5 }}
-                onPress={() => {
-                  navigation.replace('BottomDrawerNavigator');
-                }}
+                onPress={() => login(email, password)}
               >Log in</Button>
             </View>
           }
