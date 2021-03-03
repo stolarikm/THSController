@@ -1,4 +1,4 @@
-import React, { isValidElement, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { StatusBar, View, StyleSheet, Button, Text } from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
 import { DefaultTheme, Provider as PaperProvider, Appbar, TextInput } from 'react-native-paper';
@@ -33,6 +33,7 @@ export default function LoginScreen({navigation}) {
   const [repeatPassword, setRepeatPassword] = useState("");
   const [registering, setRegistering] = useState(false);
   const [error, setError] = useState("");
+  const { setLoading } = useContext(LoadingContext);
 
   const parseError = (text) => {
     var from = text.indexOf(']') + 1;
@@ -60,8 +61,7 @@ export default function LoginScreen({navigation}) {
   }
 
   const register = (login, password) => {
-    navigation.replace('BottomDrawerNavigator');
-    /*if (!isValid()) {
+    if (!isValid()) {
       return;
     }
     auth()
@@ -71,22 +71,25 @@ export default function LoginScreen({navigation}) {
       })
       .catch(error => {
         setError(parseError(error.message));
-    });*/
+    });
   }
 
   const login = (login, password) => {
     if (!isValid()) {
       return;
     }
+    setLoading(true);
     auth()
       .signInWithEmailAndPassword(login, password)
       .then(() => {
         navigation.replace('BottomDrawerNavigator');
+        setLoading(false);
         setError("");
       })
       .catch(error => {
         setError(parseError(error.message));
-    });
+        setLoading(false);
+      });
   }
 
   return (
