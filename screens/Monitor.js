@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {StatusBar} from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
-import SensorController from '../components/SensorController';
+import SensorMonitor from '../components/SensorMonitor';
 import { DefaultTheme, Provider as PaperProvider, Appbar } from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 
@@ -32,10 +32,10 @@ export default function Monitor({navigation}) {
   return (
     <PaperProvider theme={theme}>
       <Appbar.Header>
-        <Appbar.Content title="Home" subtitle={user ? user.email : ""}/>
+        <Appbar.Content title="Monitor" subtitle={user ? user.email : ""}/>
         <Appbar.Action icon="exit-to-app" onPress={logout} />
       </Appbar.Header>
-      <SensorController />
+      <SensorMonitor />
     </PaperProvider>
   );
 }

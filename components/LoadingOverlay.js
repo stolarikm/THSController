@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { BlurView } from "@react-native-community/blur";
 
-const LoadingComponent = () => {
+const LoadingOverlay = () => {
 
   const [height, setHeight] = useState(0);
 
@@ -32,4 +32,4 @@ const LoadingComponent = () => {
     },
   });
   
-  export default LoadingComponent;
+  export default LoadingOverlay;

@@ -7,7 +7,7 @@ import PeriodicalPollingService from '../utils/PeriodicalPollingService';
 import { useOrientation } from '../hooks/useOrientation';
 import firestore from '@react-native-firebase/firestore';
 
-export default function SensorController() {
+export default function SensorMonitor() {
   const [readings, setReadings] = useState([]);
   const [isRunning, setRunning] = useState(PeriodicalPollingService.isRunning());
 
