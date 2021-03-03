@@ -1,8 +1,9 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StatusBar, View, StyleSheet, Button, Text } from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
 import { DefaultTheme, Provider as PaperProvider, Appbar, TextInput } from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
+import LoadingComponent from '../components/LoadingComponent';
 
 const theme = {
   ...DefaultTheme,
@@ -33,7 +34,7 @@ export default function LoginScreen({navigation}) {
   const [repeatPassword, setRepeatPassword] = useState("");
   const [registering, setRegistering] = useState(false);
   const [error, setError] = useState("");
-  const { setLoading } = useContext(LoadingContext);
+  const [isLoading, setLoading] = useState(false);
 
   const parseError = (text) => {
     var from = text.indexOf(']') + 1;
@@ -157,6 +158,7 @@ export default function LoginScreen({navigation}) {
         </View>
       </View>
     
+      {isLoading && <LoadingComponent />}
     </PaperProvider>
   );
 }
