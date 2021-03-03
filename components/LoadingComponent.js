@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, Dimensions, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { BlurView } from "@react-native-community/blur";
 
 const LoadingComponent = () => {

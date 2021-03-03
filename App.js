@@ -1,20 +1,25 @@
 import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
-import AuthNavigator from './navigation/AuthNavigator';
-import BottomDrawerNavigator from './navigation/BottomDrawerNavigator';
+import BottomDrawerNavigator from './components/BottomDrawerNavigator';
 import {createStackNavigator} from '@react-navigation/stack';
+import LoginScreen from './screens/LoginScreen';
+import auth from '@react-native-firebase/auth';
 
 const Stack = createStackNavigator();
+
+const initialScreen = () => {
+    return auth().currentUser ? "BottomDrawerNavigator" : "LoginScreen";
+}
 
 const App = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="AuthNavigator">
+      <Stack.Navigator initialRouteName={initialScreen()}>
         <Stack.Screen
-          name="AuthNavigator"
-          component={AuthNavigator}
-          options={{headerShown: false}}
-        />
+            name="LoginScreen"
+            component={LoginScreen}
+            options={{headerShown: false}}
+          />
         <Stack.Screen
           name="BottomDrawerNavigator"
           component={BottomDrawerNavigator}

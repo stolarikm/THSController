@@ -65,13 +65,16 @@ export default function LoginScreen({navigation}) {
     if (!isValid()) {
       return;
     }
+    setLoading(true);
     auth()
       .createUserWithEmailAndPassword(login, password)
       .then(() => {
         navigation.replace('BottomDrawerNavigator');
+        setLoading(false);
       })
       .catch(error => {
         setError(parseError(error.message));
+        setLoading(false);
     });
   }
 

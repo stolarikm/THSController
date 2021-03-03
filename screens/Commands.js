@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {StatusBar} from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
 import { DefaultTheme, Provider as PaperProvider, Appbar } from 'react-native-paper';
@@ -12,7 +12,7 @@ const theme = {
   },
 };
 
-export default function Commands() {
+export default function Commands({navigation}) {
   useEffect(() => {
     StatusBar.setBackgroundColor('#005cb2');
     NavigationBar.setColor('#005cb2');
@@ -20,10 +20,19 @@ export default function Commands() {
 
   const user = auth().currentUser;
 
+  const logout = () => {
+    auth()
+      .signOut()
+      .then(() => {
+        navigation.replace('LoginScreen');
+      });
+  }
+
   return (
     <PaperProvider theme={theme}>
       <Appbar.Header>
         <Appbar.Content title="Commands" subtitle={user ? user.email : ""}/>
+        <Appbar.Action icon="exit-to-app" onPress={logout} />
       </Appbar.Header>
     </PaperProvider>
   );

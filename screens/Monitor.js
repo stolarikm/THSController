@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {StatusBar} from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
 import SensorController from '../components/SensorController';
@@ -13,7 +13,7 @@ const theme = {
   },
 };
 
-export default function Monitor() {
+export default function Monitor({navigation}) {
   useEffect(() => {
     StatusBar.setBackgroundColor('#005cb2');
     NavigationBar.setColor('#005cb2');
@@ -21,10 +21,19 @@ export default function Monitor() {
 
   const user = auth().currentUser;
 
+  const logout = () => {
+    auth()
+      .signOut()
+      .then(() => {
+        navigation.replace('LoginScreen');
+      });
+  }
+
   return (
     <PaperProvider theme={theme}>
       <Appbar.Header>
         <Appbar.Content title="Home" subtitle={user ? user.email : ""}/>
+        <Appbar.Action icon="exit-to-app" onPress={logout} />
       </Appbar.Header>
       <SensorController />
     </PaperProvider>
