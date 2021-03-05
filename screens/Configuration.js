@@ -3,6 +3,7 @@ import {StatusBar, StyleSheet, View} from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
 import { DefaultTheme, Provider as PaperProvider, Appbar, Button, TextInput } from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
+import { useConfig } from '../hooks/useConfig';
 
 const theme = {
   ...DefaultTheme,
@@ -18,7 +19,7 @@ export default function Configuration({navigation}) {
     NavigationBar.setColor('#005cb2');
   }, []);
 
-  const [sensorInputs, setSensorInputs] = useState([]);
+  const { config, setConfig } = useConfig();
   const user = auth().currentUser;
 
   const logout = () => {
@@ -38,7 +39,7 @@ export default function Configuration({navigation}) {
       <View style={styles.container}>
       <View style={{ margin: 10, flex: 1, width: 200 }}>
         <View>
-          {sensorInputs.map((element, index) => {
+          {config.map((element, index) => {
             return (
               <TextInput
                 mode='outlined'
@@ -47,10 +48,9 @@ export default function Configuration({navigation}) {
                 key={element.id}
                 value={element.ip}
                 onChangeText={text => {
-                  let newSensorsInputs = [...sensorInputs];
-                  newSensorsInputs[index] = { id: index, ip: text };
-                  setSensorInputs(newSensorsInputs);
-                  global.sensorInputs = newSensorsInputs;
+                  let newConfig = [...config];
+                  newConfig[index] = { id: index, ip: text };
+                  setConfig(newConfig);
                 }}
               />
             );
@@ -60,10 +60,9 @@ export default function Configuration({navigation}) {
               style={{ margin: 5 }}
               mode='contained'
               onPress={() => {
-                let newSensorsInputs = [...sensorInputs];
-                newSensorsInputs.push({ id: sensorInputs.length, ip: "" });
-                setSensorInputs(newSensorsInputs);
-                global.sensorInputs = newSensorsInputs;
+                let newConfig = [...config];
+                newConfig.push({ id: newConfig.length, ip: "" });
+                setConfig(newConfig);
               }}
             >+</Button>
           </View>

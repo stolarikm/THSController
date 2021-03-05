@@ -6,17 +6,18 @@ import ModbusService from '../modbus/ModbusService'
 import PeriodicalPollingService from '../utils/PeriodicalPollingService';
 import { useOrientation } from '../hooks/useOrientation';
 import firestore from '@react-native-firebase/firestore';
+import { useConfig } from '../hooks/useConfig';
 
 export default function SensorMonitor() {
   const [readings, setReadings] = useState([]);
   const [isRunning, setRunning] = useState(PeriodicalPollingService.isRunning());
+  const { config } = useConfig();
 
   const isPortrait = useOrientation();
   var screenWidth = Dimensions.get('window').width;
   var screenHeight = Dimensions.get('window').height;
 
   useEffect(() => {
-    global.sensorInputs = [];
     var unsubscribe = firestore().collection("readings")
       .onSnapshot((snapshot) => {
         var snapshotData = [];
@@ -28,8 +29,8 @@ export default function SensorMonitor() {
   }, []);
 
   const onStart = () => {
-    if (global.sensorInputs && global.sensorInputs.length > 0) {
-      PeriodicalPollingService.start(() => pollSensorsSequentially(global.sensorInputs), 15000);
+    if (config.length > 0) {
+      PeriodicalPollingService.start(() => pollSensorsSequentially(config), 15000);
       setRunning(true);
     }
   };
