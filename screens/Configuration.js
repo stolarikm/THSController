@@ -37,38 +37,37 @@ export default function Configuration({navigation}) {
         <Appbar.Action icon="exit-to-app" onPress={logout} />
       </Appbar.Header>
       <View style={styles.container}>
-      <View style={{ margin: 10, flex: 1, width: 200 }}>
-        <View>
-          {config.map((element, index) => {
-            return (
-              <TextInput
-                mode='outlined'
-                placeholder='192.168.0.68'
-                label='IP address'
-                key={element.id}
-                value={element.ip}
-                onChangeText={text => {
+        <View style={{ margin: 10, flex: 1, width: 200 }}>
+          <View>
+            {config.map((element, index) => {
+              return (
+                <TextInput
+                  placeholder='192.168.0.68'
+                  label='IP address'
+                  key={element.id}
+                  value={element.ip}
+                  onChangeText={text => {
+                    let newConfig = [...config];
+                    newConfig[index] = { id: index, ip: text };
+                    setConfig(newConfig);
+                  }}
+                />
+              );
+            })}
+            <View style={{ flexDirection: "row", marginTop: 5 }}>
+              <Button
+                style={{ margin: 5 }}
+                mode='contained'
+                onPress={() => {
                   let newConfig = [...config];
-                  newConfig[index] = { id: index, ip: text };
+                  newConfig.push({ id: newConfig.length, ip: "" });
                   setConfig(newConfig);
                 }}
-              />
-            );
-          })}
-          <View style={{ flexDirection: "row", marginTop: 5 }}>
-            <Button
-              style={{ margin: 5 }}
-              mode='contained'
-              onPress={() => {
-                let newConfig = [...config];
-                newConfig.push({ id: newConfig.length, ip: "" });
-                setConfig(newConfig);
-              }}
-            >+</Button>
+              >+</Button>
+            </View>
           </View>
         </View>
       </View>
-    </View>
     </PaperProvider>
   );
 }
