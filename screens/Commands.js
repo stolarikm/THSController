@@ -4,6 +4,8 @@ import NavigationBar from 'react-native-navbar-color'
 import { DefaultTheme, Provider as PaperProvider, Appbar, TextInput } from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 import DropDown from '../thirdParty/DropDown';
+import { Chip } from 'react-native-paper';
+import { useConfig } from '../hooks/useConfig';
 
 const theme = {
   ...DefaultTheme,
@@ -22,7 +24,9 @@ export default function Commands({navigation}) {
   const [showDropDown, setShowDropDown] = useState(false);
   const [command, setCommand] = useState("");
   const [value, setValue] = useState("");
+  const [targets, setTargets] = useState([]);
   const user = auth().currentUser;
+  const { config } = useConfig();
 
   const logout = () => {
     auth()
@@ -30,6 +34,21 @@ export default function Commands({navigation}) {
       .then(() => {
         navigation.replace('LoginScreen');
       });
+  }
+
+  const isSelected = (item) => {
+    console.log(targets);
+    return targets.some(t => t.id === item.id);
+  }
+
+  const select = (item) => {
+    if (targets.some(t => t.id === item.id)) {
+      var newTargets = targets.filter(t => t.id !== item.id);
+    } else {
+      var newTargets = [...targets];
+      newTargets.push(item);
+    }
+    setTargets(newTargets);
   }
 
   const commandList = [
@@ -45,24 +64,33 @@ export default function Commands({navigation}) {
         <Appbar.Action icon="exit-to-app" onPress={logout} />
       </Appbar.Header>
       <View style={styles.container}>
-        <View style={{ margin: 10, flex: 1, width: 300 }}>
-          <DropDown
-            label='Command'
-            value={command}
-            setValue={setCommand}
-            list={commandList}
-            visible={showDropDown}
-            showDropDown={() => setShowDropDown(true)}
-            onDismiss={() => setShowDropDown(false)}
-            inputProps={{
-              right: <TextInput.Icon name={'menu-down'} />,
-            }}
-          />
-          <TextInput
-            label='Value'
-            value={value}
-            onChangeText={text => setValue(text)}
-          />
+        <View style={{ margin: 10, flex: 1 }}>
+          <View style={{ flexDirection: 'row', width: '95%'}}>
+            <View style={{ width: '50%', marginRight: 15 }}>
+              <DropDown
+                label='Command'
+                value={command}
+                setValue={setCommand}
+                list={commandList}
+                visible={showDropDown}
+                showDropDown={() => setShowDropDown(true)}
+                onDismiss={() => setShowDropDown(false)}
+                inputProps={{
+                  right: <TextInput.Icon name={'menu-down'} />,
+                }}
+              />
+            </View>
+            <TextInput style={{ width: '50%' }}
+              label='Value'
+              value={value}
+              onChangeText={text => setValue(text)}
+            />
+          </View>
+        </View>
+        <View style={{ margin: 10, flex: 4 }}>
+          {config.map((item) => {
+            return(<Chip key={item.id} selected={isSelected(item)} onPress={() => select(item)}>{item.ip}</Chip>);
+          })}
         </View>
       </View>
     </PaperProvider>
