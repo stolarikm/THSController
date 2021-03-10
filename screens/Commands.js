@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import {StatusBar, StyleSheet, View} from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
-import { DefaultTheme, Provider as PaperProvider, Appbar, TextInput } from 'react-native-paper';
+import { DefaultTheme, Provider as PaperProvider, Appbar, TextInput, Button } from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 import DropDown from '../thirdParty/DropDown';
 import { Chip } from 'react-native-paper';
 import { useConfig } from '../hooks/useConfig';
+import ModbusService from '../modbus/ModbusService';
 
 const theme = {
   ...DefaultTheme,
@@ -25,8 +26,14 @@ export default function Commands({navigation}) {
   const [command, setCommand] = useState("");
   const [value, setValue] = useState("");
   const [targets, setTargets] = useState([]);
+  const [canSend, setCanSend] = useState(false);
   const user = auth().currentUser;
   const { config } = useConfig();
+
+  useEffect(() => {
+    console.log(command);
+    setCanSend(command && command === '1' && value && targets.length !== 0);
+  }, [command, value, targets]);
 
   const logout = () => {
     auth()
@@ -52,10 +59,16 @@ export default function Commands({navigation}) {
   }
 
   const commandList = [
-    { label: 'Command1', value: '1' },
-    { label: 'Command2', value: '2' },
-    { label: 'Command3', value: '3' },
+    { label: 'Temperature correction', value: '1' },
   ];
+
+  const sendCommand = async () => {
+    if (!canSend) {
+      return;
+    }
+    var result = await ModbusService.writeTemperatureCorrection(targets[0].ip, parseInt(value));
+    console.log(result);
+  }
 
   return (
     <PaperProvider theme={theme}>
@@ -66,7 +79,7 @@ export default function Commands({navigation}) {
       <View style={styles.container}>
         <View style={{ margin: 10, flex: 1 }}>
           <View style={{ flexDirection: 'row', width: '95%'}}>
-            <View style={{ width: '50%', marginRight: 15 }}>
+            <View style={{ width: '70%', marginRight: 15 }}>
               <DropDown
                 label='Command'
                 value={command}
@@ -80,17 +93,27 @@ export default function Commands({navigation}) {
                 }}
               />
             </View>
-            <TextInput style={{ width: '50%' }}
+            <TextInput style={{ width: '30%' }}
               label='Value'
               value={value}
               onChangeText={text => setValue(text)}
             />
           </View>
         </View>
-        <View style={{ margin: 10, flex: 4 }}>
+        <View style={{ margin: 10, flex: 3 }}>
           {config.map((item) => {
             return(<Chip key={item.id} selected={isSelected(item)} onPress={() => select(item)}>{item.ip}</Chip>);
           })}
+        </View>
+        <View style={{ margin: 10, flex: 1 }}>
+          <View style={{ flexDirection: "row", marginTop: 5 }}>
+              <Button
+                style={{ margin: 5 }}
+                mode='contained'
+                disabled={!canSend}
+                onPress={() => sendCommand()}
+              >Send</Button>
+            </View>
         </View>
       </View>
     </PaperProvider>

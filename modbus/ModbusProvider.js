@@ -34,4 +34,14 @@ export default class ModbusProvider {
             }
         });
     };
+
+    static write(address, value) {
+        return new Promise((resolve, reject) => {
+            if (this.connected) {
+                ModbusTcp.writeRegister(1, address, value, (res) => {
+                    resolve(res);
+                });
+            }
+        });
+    };
 }
