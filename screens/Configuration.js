@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {StatusBar, StyleSheet, View} from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
-import { Appbar, TextInput, FAB } from 'react-native-paper';
+import { Appbar, FAB, Card, Title, Paragraph } from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 import { useConfig } from '../hooks/useConfig';
-import { ScrollView } from 'react-native';
+import NewDeviceModal from '../components/NewDeviceModal';
 
 export default function Configuration({navigation}) {
   useEffect(() => {
@@ -14,6 +14,7 @@ export default function Configuration({navigation}) {
 
   const { config, setConfig } = useConfig();
   const user = auth().currentUser;
+  const [modalOpen, setModalOpen] = useState(false);
 
   const logout = () => {
     auth()
@@ -23,6 +24,32 @@ export default function Configuration({navigation}) {
       });
   }
 
+  const validate = (device) => {
+    if (!device.name) {
+      return { ok: false, message: "Please provide a device name"}
+    }
+    if (!device.ip) {
+      return { ok: false, message: "Please provide a device address"}
+    }
+    if (config.some(d => d.name === device.name)) {
+      return { ok: false, message: "Device with this name already exists"}
+    }
+    if (config.some(d => d.name === device.name)) {
+      return { ok: false, message: "Device with this name already exists"}
+    }
+    if (config.some(d => d.ip === device.ip)) {
+      return { ok: false, message: "Device with this address already exists"}
+    }
+    return { ok: true };
+  }
+
+  const addDevice = (device) => {
+    let newConfig = [...config];
+    newConfig.push(device);
+    setConfig(newConfig);
+    setModalOpen(false);
+  }
+
   return (
     <>
       <Appbar.Header>
@@ -30,34 +57,22 @@ export default function Configuration({navigation}) {
         <Appbar.Action icon="exit-to-app" onPress={logout} />
       </Appbar.Header>
       <View style={styles.container}>
-        <ScrollView contentContainerStyle={{alignItems: 'center', justifyContent: 'center'}} style={{flex: 2, width: '100%'}}>
-          <View style={{ margin: 10, flex: 1, width: '75%' }}>
-            {config.map((element, index) => {
-              return (
-                <TextInput
-                  placeholder='192.168.0.68'
-                  label='IP address'
-                  key={element.id}
-                  value={element.ip}
-                  onChangeText={text => {
-                    let newConfig = [...config];
-                    newConfig[index] = { id: index, ip: text };
-                    setConfig(newConfig);
-                  }}
-                  style={{marginBottom: 10}}
-                />
-              );
-            })}
-          </View>
-        </ScrollView>
+        <View style={{ flex: 1, flexDirection: "row", marginTop: 10 }}>
+          {config.map((element, index) => {
+            return (
+              <Card key={index} style={{margin: 5, height: '15%', width: '45%'}}>
+                <Card.Content>
+                  <Title>{element.name}</Title>
+                  <Paragraph>{element.ip}</Paragraph>
+                </Card.Content>
+              </Card>
+            );
+          })}
+        </View>
         <FAB
             icon="plus"
             label="Add"
-            onPress={() => {
-              let newConfig = [...config];
-              newConfig.push({ id: newConfig.length, ip: "" });
-              setConfig(newConfig);
-            }}
+            onPress={() => {setModalOpen(true)}}
             style={{
               position: 'absolute',
               margin: 30,
@@ -77,6 +92,12 @@ export default function Configuration({navigation}) {
             }}
           />
       </View>
+      <NewDeviceModal
+        visible={modalOpen}
+        close={() => setModalOpen(false)}
+        validate={validate}
+        confirm={addDevice}
+      />
     </>
   );
 }
@@ -84,7 +105,7 @@ export default function Configuration({navigation}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#fafafa',
     alignItems: 'center',
     justifyContent: 'center',
   }

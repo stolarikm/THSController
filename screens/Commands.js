@@ -36,12 +36,12 @@ export default function Commands({navigation}) {
 
   const isSelected = (item) => {
     console.log(targets);
-    return targets.some(t => t.id === item.id);
+    return targets.some(t => t.ip === item.ip);
   }
 
   const select = (item) => {
-    if (targets.some(t => t.id === item.id)) {
-      var newTargets = targets.filter(t => t.id !== item.id);
+    if (targets.some(t => t.ip === item.ip)) {
+      var newTargets = targets.filter(t => t.ip !== item.ip);
     } else {
       var newTargets = [...targets];
       newTargets.push(item);
@@ -86,8 +86,8 @@ export default function Commands({navigation}) {
           </View>
         </View>
         <View style={{ margin: 10, flex: 3 }}>
-          {config.map((item) => {
-            return(<Chip key={item.id} selected={isSelected(item)} onPress={() => select(item)}>{item.ip}</Chip>);
+          {config.map((item, index) => {
+            return(<Chip key={index} selected={isSelected(item)} onPress={() => select(item)}>{item.name}</Chip>);
           })}
         </View>
           <FAB
@@ -110,7 +110,7 @@ export default function Commands({navigation}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#fafafa',
     alignItems: 'center',
     justifyContent: 'center',
   }

@@ -5,16 +5,6 @@ import { Appbar, TextInput } from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 import LoadingOverlay from '../components/LoadingOverlay';
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  }
-});
-
 export default function LoginScreen({navigation}) {
   useEffect(() => {
     StatusBar.setBackgroundColor('#005cb2');
@@ -157,3 +147,13 @@ export default function LoginScreen({navigation}) {
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: '#fafafa',
+    alignItems: 'center',
+    justifyContent: 'center',
+  }
+});

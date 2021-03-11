@@ -57,7 +57,7 @@ export default function Monitor({navigation}) {
       for (sensor of sensors) {
         var temperature = await ModbusService.readTemperature(sensor.ip);
         var sensorData = {
-          id: sensor.id,
+          name: sensor.name,
           ip: sensor.ip,
           value: temperature,
         };
@@ -135,12 +135,12 @@ export default function Monitor({navigation}) {
           />  
         }
         <View style={{ flexDirection: "row", marginTop: 5 }}>
-          {readings && readings.length > 0 && readings[readings.length - 1].devices.map((element) => {
+          {readings && readings.length > 0 && readings[readings.length - 1].devices.map((element, index) => {
             return (
-              <Card key={element.id}>
+              <Card key={index}>
                 <Card.Content>
                   <Title>{element.value} °C</Title>
-                  <Paragraph>{element.ip}</Paragraph>
+                  <Paragraph>{element.name}</Paragraph>
                 </Card.Content>
               </Card>
             );
@@ -181,7 +181,7 @@ const lineConfig = {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#fafafa',
     alignItems: 'center',
     justifyContent: 'center',
   },
