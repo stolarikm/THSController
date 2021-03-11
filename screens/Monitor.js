@@ -1,22 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Dimensions, processColor, StatusBar } from 'react-native';
-import { DefaultTheme, Provider as PaperProvider, Appbar, Card, Title, Paragraph, FAB } from 'react-native-paper';
+import { Appbar, Card, Title, Paragraph, FAB } from 'react-native-paper';
 import { LineChart } from 'react-native-charts-wrapper';
 import ModbusService from '../modbus/ModbusService'
-import PeriodicalPollingService from '../utils/PeriodicalPollingService';
+import PeriodicalPollingService from '../services/PeriodicalPollingService';
 import { useOrientation } from '../hooks/useOrientation';
 import firestore from '@react-native-firebase/firestore';
 import { useConfig } from '../hooks/useConfig';
 import auth from '@react-native-firebase/auth';
 import NavigationBar from 'react-native-navbar-color'
-
-const theme = {
-  ...DefaultTheme,
-  colors: {
-    ...DefaultTheme.colors,
-    primary: '#1976d2',
-  },
-};
 
 export default function Monitor({navigation}) {
   useEffect(() => {
@@ -109,7 +101,7 @@ export default function Monitor({navigation}) {
   }
 
   return (
-    <PaperProvider theme={theme}>
+    <>
       <Appbar.Header>
         <Appbar.Content title="Monitor" subtitle={user ? user.email : ""}/>
         <Appbar.Action icon="exit-to-app" onPress={logout} />
@@ -173,7 +165,7 @@ export default function Monitor({navigation}) {
           />
         </View>
       </View>
-    </PaperProvider>
+    </>
   );
 }
 

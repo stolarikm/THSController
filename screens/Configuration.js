@@ -1,18 +1,10 @@
 import React, { useEffect } from 'react';
 import {StatusBar, StyleSheet, View} from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
-import { DefaultTheme, Provider as PaperProvider, Appbar, TextInput, FAB } from 'react-native-paper';
+import { Appbar, TextInput, FAB } from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 import { useConfig } from '../hooks/useConfig';
 import { ScrollView } from 'react-native';
-
-const theme = {
-  ...DefaultTheme,
-  colors: {
-    ...DefaultTheme.colors,
-    primary: '#1976d2',
-  },
-};
 
 export default function Configuration({navigation}) {
   useEffect(() => {
@@ -32,7 +24,7 @@ export default function Configuration({navigation}) {
   }
 
   return (
-    <PaperProvider theme={theme}>
+    <>
       <Appbar.Header>
         <Appbar.Content title="Configuration" subtitle={user ? user.email : ""}/>
         <Appbar.Action icon="exit-to-app" onPress={logout} />
@@ -85,7 +77,7 @@ export default function Configuration({navigation}) {
             }}
           />
       </View>
-    </PaperProvider>
+    </>
   );
 }
 

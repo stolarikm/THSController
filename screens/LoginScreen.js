@@ -1,17 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar, View, StyleSheet, Button, Text } from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
-import { DefaultTheme, Provider as PaperProvider, Appbar, TextInput } from 'react-native-paper';
+import { Appbar, TextInput } from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 import LoadingOverlay from '../components/LoadingOverlay';
-
-const theme = {
-  ...DefaultTheme,
-  colors: {
-    ...DefaultTheme.colors,
-    primary: '#1976d2',
-  },
-};
 
 const styles = StyleSheet.create({
   container: {
@@ -97,7 +89,7 @@ export default function LoginScreen({navigation}) {
   }
 
   return (
-    <PaperProvider theme={theme}>
+    <>
       <Appbar.Header>
         <Appbar.Content title="Login" />
       </Appbar.Header>
@@ -162,6 +154,6 @@ export default function LoginScreen({navigation}) {
       </View>
     
       {isLoading && <LoadingOverlay />}
-    </PaperProvider>
+    </>
   );
 }

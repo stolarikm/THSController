@@ -1,20 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import {StatusBar, StyleSheet, View} from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
-import { DefaultTheme, Provider as PaperProvider, Appbar, TextInput, Button, FAB } from 'react-native-paper';
+import { Appbar, TextInput, FAB } from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 import { Select } from '../components/DropDown';
 import { Chip } from 'react-native-paper';
 import { useConfig } from '../hooks/useConfig';
 import ModbusService from '../modbus/ModbusService';
-
-const theme = {
-  ...DefaultTheme,
-  colors: {
-    ...DefaultTheme.colors,
-    primary: '#1976d2',
-  },
-};
 
 export default function Commands({navigation}) {
   useEffect(() => {
@@ -70,7 +62,7 @@ export default function Commands({navigation}) {
   }
 
   return (
-    <PaperProvider theme={theme}>
+    <>
       <Appbar.Header>
         <Appbar.Content title="Commands" subtitle={user ? user.email : ""}/>
         <Appbar.Action icon="exit-to-app" onPress={logout} />
@@ -111,7 +103,7 @@ export default function Commands({navigation}) {
             }}
           />
       </View>
-    </PaperProvider>
+    </>
   );
 }
 
