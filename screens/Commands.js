@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {StatusBar, StyleSheet, View} from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
-import { DefaultTheme, Provider as PaperProvider, Appbar, TextInput, Button } from 'react-native-paper';
+import { DefaultTheme, Provider as PaperProvider, Appbar, TextInput, Button, FAB } from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 import DropDown from '../thirdParty/DropDown';
 import { Chip } from 'react-native-paper';
@@ -105,16 +105,18 @@ export default function Commands({navigation}) {
             return(<Chip key={item.id} selected={isSelected(item)} onPress={() => select(item)}>{item.ip}</Chip>);
           })}
         </View>
-        <View style={{ margin: 10, flex: 1 }}>
-          <View style={{ flexDirection: "row", marginTop: 5 }}>
-              <Button
-                style={{ margin: 5 }}
-                mode='contained'
-                disabled={!canSend}
-                onPress={() => sendCommand()}
-              >Send</Button>
-            </View>
-        </View>
+          <FAB
+            icon="send"
+            label="Send"
+            onPress={() => sendCommand()}
+            disabled={!canSend}
+            style={{
+              position: 'absolute',
+              bottom: 30,
+              marginLeft: 'auto', 
+              marginRight: 'auto'
+            }}
+          />
       </View>
     </PaperProvider>
   );

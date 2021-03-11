@@ -35,9 +35,9 @@ const BottomDrawerNavigator = () => {
                         </View>),  
                 }  
             }/>
-            <Tab.Screen name="Settings" component={Configuration} options={
+            <Tab.Screen name="Configuration" component={Configuration} options={
                 {  
-                    tabBarLabel:'Settings',  
+                    tabBarLabel:'Configuration',  
                     tabBarIcon: ({ color  }) => (  
                         <View>  
                             <Icon style={[{color: color }]} size={25} name={'settings'}/>  
