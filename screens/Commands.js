@@ -3,7 +3,7 @@ import {StatusBar, StyleSheet, View} from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
 import { DefaultTheme, Provider as PaperProvider, Appbar, TextInput, Button, FAB } from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
-import DropDown from '../thirdParty/DropDown';
+import { Select } from '../components/DropDown';
 import { Chip } from 'react-native-paper';
 import { useConfig } from '../hooks/useConfig';
 import ModbusService from '../modbus/ModbusService';
@@ -22,7 +22,6 @@ export default function Commands({navigation}) {
     NavigationBar.setColor('#005cb2');
   }, []);
 
-  const [showDropDown, setShowDropDown] = useState(false);
   const [command, setCommand] = useState("");
   const [value, setValue] = useState("");
   const [targets, setTargets] = useState([]);
@@ -80,17 +79,11 @@ export default function Commands({navigation}) {
         <View style={{ margin: 10, flex: 1 }}>
           <View style={{ flexDirection: 'row', width: '95%'}}>
             <View style={{ width: '70%', marginRight: 15 }}>
-              <DropDown
+              <Select
                 label='Command'
                 value={command}
                 setValue={setCommand}
-                list={commandList}
-                visible={showDropDown}
-                showDropDown={() => setShowDropDown(true)}
-                onDismiss={() => setShowDropDown(false)}
-                inputProps={{
-                  right: <TextInput.Icon name={'menu-down'} />,
-                }}
+                data={commandList}
               />
             </View>
             <TextInput style={{ width: '30%' }}

@@ -2,6 +2,15 @@ import { ScrollView, View, } from "react-native";
 import { Menu, TextInput, TouchableRipple, useTheme } from "react-native-paper";
 import React, { forwardRef, useEffect, useState } from "react";
 
+/*
+ * File from library react-native-paper-dropdown
+ * https://github.com/fateh999/react-native-paper-dropdown
+ * Extracted because of unresolved issue https://github.com/fateh999/react-native-paper-dropdown/issues/4
+ * with waiting pull request with fix, therefore I included my own fix.
+ * 
+ * There is also Select component added, to provide wrapper for DropDown, without need of tracking visibility state.
+ */
+
 const DropDown = forwardRef((props, ref) => {
     const activeTheme = useTheme();
     const { visible, onDismiss, showDropDown, value, setValue, activeColor, mode, label, placeholder, inputProps, list, dropDownContainerMaxHeight, theme, } = props;
@@ -44,4 +53,28 @@ const DropDown = forwardRef((props, ref) => {
         </ScrollView>
       </Menu>);
 });
-export default DropDown;
+
+const Select = ({ label, value, setValue, data }) => {
+
+    const [showDropDown, setShowDropDown] = useState(false);
+
+    return (
+        <DropDown
+        label={label}
+        value={value}
+        setValue={setValue}
+        list={data}
+        visible={showDropDown}
+        showDropDown={() => setShowDropDown(true)}
+        onDismiss={() => setShowDropDown(false)}
+        inputProps={{
+            right: <TextInput.Icon name={'menu-down'} />,
+        }}
+        />
+    );
+};
+
+export {
+    DropDown,
+    Select
+};
