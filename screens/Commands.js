@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {StatusBar, StyleSheet, View} from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
-import { Appbar, TextInput, FAB } from 'react-native-paper';
+import { TextInput, FAB } from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 import { Select } from '../components/DropDown';
 import { Chip } from 'react-native-paper';
@@ -18,21 +18,24 @@ export default function Commands({navigation}) {
   const [value, setValue] = useState("");
   const [targets, setTargets] = useState([]);
   const [canSend, setCanSend] = useState(false);
-  const user = auth().currentUser;
-  const { config } = useConfig();
+  const { config, setConfig } = useConfig();
+
+  useEffect(() => { //TODO refactor
+    const unsubscribe = navigation.addListener('focus', () => {
+      let newConfig = {
+        ...config,
+        screenName: "Commands"
+      };
+      setConfig(newConfig);
+    });
+    
+    return unsubscribe;
+  }, [navigation]);
 
   useEffect(() => {
     console.log(command);
     setCanSend(command && command === '1' && value && targets.length !== 0);
   }, [command, value, targets]);
-
-  const logout = () => {
-    auth()
-      .signOut()
-      .then(() => {
-        navigation.replace('LoginScreen');
-      });
-  }
 
   const isSelected = (item) => {
     console.log(targets);
@@ -63,10 +66,6 @@ export default function Commands({navigation}) {
 
   return (
     <>
-      <Appbar.Header>
-        <Appbar.Content title="Commands" subtitle={user ? user.email : ""}/>
-        <Appbar.Action icon="exit-to-app" onPress={logout} />
-      </Appbar.Header>
       <View style={styles.container}>
         <View style={{ margin: 10, flex: 1 }}>
           <View style={{ flexDirection: 'row', width: '95%'}}>
@@ -86,7 +85,7 @@ export default function Commands({navigation}) {
           </View>
         </View>
         <View style={{ margin: 10, flex: 3 }}>
-          {config.map((item, index) => {
+          {config.devices.map((item, index) => {
             return(<Chip key={index} selected={isSelected(item)} onPress={() => select(item)}>{item.name}</Chip>);
           })}
         </View>

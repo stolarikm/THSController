@@ -4,6 +4,7 @@ import NavigationBar from 'react-native-navbar-color'
 import { Appbar, TextInput } from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 import LoadingOverlay from '../components/LoadingOverlay';
+import { useConfig } from '../hooks/useConfig';
 
 export default function LoginScreen({navigation}) {
   useEffect(() => {
@@ -17,6 +18,19 @@ export default function LoginScreen({navigation}) {
   const [registering, setRegistering] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setLoading] = useState(false);
+  const { config, setConfig } = useConfig();
+
+  useEffect(() => { //TODO refactor
+    const unsubscribe = navigation.addListener('focus', () => {
+      let newConfig = {
+        ...config,
+        screenName: "Login"
+      };
+      setConfig(newConfig);
+    });
+    
+    return unsubscribe;
+  }, [navigation]);
 
   const parseError = (text) => {
     var from = text.indexOf(']') + 1;
@@ -80,10 +94,6 @@ export default function LoginScreen({navigation}) {
 
   return (
     <>
-      <Appbar.Header>
-        <Appbar.Content title="Login" />
-      </Appbar.Header>
-
       <View style={styles.container}>
         <View style={{ flex: 1, marginLeft: 50, marginRight: 50 }}>
           <TextInput

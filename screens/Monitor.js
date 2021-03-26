@@ -27,16 +27,27 @@ export default function Monitor({navigation}) {
       return unsubscribe;
   }, []);
 
-  const user = auth().currentUser;
   const [readings, setReadings] = useState([]);
   const [isRunning, setRunning] = useState(PeriodicalPollingService.isRunning());
-  const { config } = useConfig();
+  const { config, setConfig } = useConfig();
   const isPortrait = useOrientation();
   var screenWidth = Dimensions.get('window').width;
   var screenHeight = Dimensions.get('window').height;
 
+  useEffect(() => { //TODO refactor
+    const unsubscribe = navigation.addListener('focus', () => {
+      let newConfig = {
+        ...config,
+        screenName: "Monitor"
+      };
+      setConfig(newConfig);
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
   const onStart = () => {
-    if (config.length > 0) {
+    if (config.devices.length > 0) {
       PeriodicalPollingService.start(() => pollSensorsSequentially(config), 15000);
       setRunning(true);
     }
@@ -92,27 +103,15 @@ export default function Monitor({navigation}) {
     return read;
   }
 
-  const logout = () => {
-    auth()
-      .signOut()
-      .then(() => {
-        navigation.replace('LoginScreen');
-      });
-  }
-
   return (
     <>
-      <Appbar.Header>
-        <Appbar.Content title="Monitor" subtitle={user ? user.email : ""}/>
-        <Appbar.Action icon="exit-to-app" onPress={logout} />
-      </Appbar.Header>
-        <View style={styles.container}>
+      <View style={styles.container}>
         {!isRunning && 
           <FAB
             icon="play"
             label="Start"
             onPress={() => onStart()}
-            disabled={config.length === 0}
+            disabled={config.devices.length === 0}
             style={{
               position: 'absolute',
               top: 30,
@@ -165,7 +164,7 @@ export default function Monitor({navigation}) {
           />
         </View>
       </View>
-    </>
+      </>
   );
 }
 

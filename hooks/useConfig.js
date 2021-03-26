@@ -11,7 +11,10 @@ export const useConfig = () => {
 }
 
 const ConfigProvider = ({ children }) => {
-    const [config, setConfig] = useState([]);
+    const [config, setConfig] = useState({
+        screenName: "",
+        devices: []
+    });
     
     return (
         <ConfigContext.Provider value = {config}>
