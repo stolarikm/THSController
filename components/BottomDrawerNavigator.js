@@ -3,10 +3,10 @@ import React from 'react';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs'; 
 import Icon from 'react-native-vector-icons/MaterialIcons'; 
 import { View } from 'react-native';
-import Configuration from '../screens/Configuration';
 import Monitor from '../screens/Monitor';
 import Commands from '../screens/Commands';
 import { useConfig } from '../hooks/useConfig';
+import Gateway from '../screens/Gateway';
 
 const Tab = createMaterialBottomTabNavigator();
 
@@ -39,12 +39,12 @@ const BottomDrawerNavigator = () => {
                 }  
             }/>
             {config.mode === 'gateway' && 
-                <Tab.Screen name="Configuration" component={Configuration} options={
+                <Tab.Screen name="Gateway" component={Gateway} options={
                     {  
-                        tabBarLabel:'Configuration',  
+                        tabBarLabel:'Gateway',  
                         tabBarIcon: ({ color  }) => (  
                             <View>  
-                                <Icon style={[{color: color }]} size={25} name={'settings'}/>  
+                                <Icon style={[{color: color }]} size={25} name={'router'}/>  
                             </View>),  
                     }
                 }/>
