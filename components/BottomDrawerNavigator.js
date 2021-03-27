@@ -6,10 +6,13 @@ import { View } from 'react-native';
 import Configuration from '../screens/Configuration';
 import Monitor from '../screens/Monitor';
 import Commands from '../screens/Commands';
+import { useConfig } from '../hooks/useConfig';
 
 const Tab = createMaterialBottomTabNavigator();
 
 const BottomDrawerNavigator = () => {
+    const { config } = useConfig();
+
     return (
         <Tab.Navigator 
             initialRouteName="Monitor" 
@@ -35,15 +38,17 @@ const BottomDrawerNavigator = () => {
                         </View>),  
                 }  
             }/>
-            <Tab.Screen name="Configuration" component={Configuration} options={
-                {  
-                    tabBarLabel:'Configuration',  
-                    tabBarIcon: ({ color  }) => (  
-                        <View>  
-                            <Icon style={[{color: color }]} size={25} name={'settings'}/>  
-                        </View>),  
-                }
-            }/>
+            {config.mode === 'gateway' && 
+                <Tab.Screen name="Configuration" component={Configuration} options={
+                    {  
+                        tabBarLabel:'Configuration',  
+                        tabBarIcon: ({ color  }) => (  
+                            <View>  
+                                <Icon style={[{color: color }]} size={25} name={'settings'}/>  
+                            </View>),  
+                    }
+                }/>
+            }
         </Tab.Navigator>
     );
 }

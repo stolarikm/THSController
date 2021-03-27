@@ -25,7 +25,7 @@ export default function Configuration({navigation}) {
     });
     
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation, config]);
 
   const validate = (device) => {
     if (!device.name) {

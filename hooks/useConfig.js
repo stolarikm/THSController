@@ -16,7 +16,7 @@ const ConfigProvider = ({ children }) => {
         mode: "client",
         devices: []
     });
-    
+  
     return (
         <ConfigContext.Provider value = {config}>
             <ConfigUpdateContext.Provider value = {setConfig}>

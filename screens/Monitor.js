@@ -44,7 +44,7 @@ export default function Monitor({navigation}) {
     });
 
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation, config]);
 
   const onStart = () => {
     if (config.devices.length > 0) {

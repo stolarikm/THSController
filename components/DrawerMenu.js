@@ -4,9 +4,11 @@ import { View } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import * as NavigationService from '../services/NavigationService';
 import SwitchModeDialog from './SwitchModeDialog';
+import { useConfig } from '../hooks/useConfig';
 
 const DrawerMenu = ({close}) => {
     const user = auth().currentUser;
+    const { config } = useConfig();
 
     const [showSwitchModeDialog, setShowSwitchModeDialog] = useState(false);
 
@@ -27,7 +29,7 @@ const DrawerMenu = ({close}) => {
     return (
         <>
             <View>
-                <DrawerHeader title="Options" subtitle={user ? user.email : ""}/>
+                <DrawerHeader title={config.mode === 'client' ? "Client mode" : "Gateway mode"} subtitle={user ? user.email : ""}/>
                 <DrawerItem text={'Switch mode'} icon={'swap-vert'} onPress={switchMode}/>
                 <DrawerItem text={'Logout'} icon={'exit-to-app'} onPress={logout}/>
             </View>

@@ -30,7 +30,7 @@ export default function Commands({navigation}) {
     });
     
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation, config]);
 
   useEffect(() => {
     console.log(command);

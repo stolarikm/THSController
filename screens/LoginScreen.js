@@ -30,7 +30,7 @@ export default function LoginScreen({navigation}) {
     });
     
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation, config]);
 
   const parseError = (text) => {
     var from = text.indexOf(']') + 1;
