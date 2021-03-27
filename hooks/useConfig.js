@@ -13,6 +13,7 @@ export const useConfig = () => {
 const ConfigProvider = ({ children }) => {
     const [config, setConfig] = useState({
         screenName: "",
+        mode: "client",
         devices: []
     });
     
