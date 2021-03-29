@@ -59,4 +59,14 @@ export default class ModbusService {
             console.error("Error sending command: " + error);
         }
     };
+
+    static async isDevicePresent(ip) {
+        try {
+            await ModbusProvider.connect(ip, 502);
+            await ModbusProvider.disconnect();
+            return true;
+        } catch (error) {
+            return false;
+        }
+    };
 }

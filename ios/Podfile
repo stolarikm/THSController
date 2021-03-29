@@ -29,4 +29,6 @@ target 'THSController' do
 
   pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
 
+  pod 'react-native-get-subnet-mask', :path => '../node_modules/react-native-get-subnet-mask'
+
 end

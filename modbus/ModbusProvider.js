@@ -7,9 +7,15 @@ export default class ModbusProvider {
         return new Promise((resolve, reject) => {
             if (!this.connected) {
                 ModbusTcp.connectToModbusMaster(ip, port, (res) => {
-                    this.connected = true;
-                    resolve(res);
+                    if (res.includes("success")) {
+                        this.connected = true;
+                        resolve(res);
+                    } else {
+                        reject();
+                    }
                 });
+            } else {
+                reject();
             }
         });
     };

@@ -22,6 +22,7 @@
     "expo-status-bar": "~1.0.3",
     "expo-updates": "~0.4.1",
     "material-bread": "^0.2.10",
+    "netmask": "^2.0.0",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-native": "0.63.4",
@@ -29,6 +30,7 @@
     "react-native-charts-wrapper": "^0.5.7",
     "react-native-elements": "^3.2.0",
     "react-native-gesture-handler": "~1.8.0",
+    "react-native-get-subnet-mask": "^1.0.0",
     "react-native-modal": "^11.7.0",
     "react-native-modbus-tcp": "^1.0.0",
     "react-native-navbar-color": "^1.0.3",
@@ -41,6 +43,7 @@
     "react-native-vector-icons": "^7.1.0",
     "react-native-web": "~0.13.12",
     "react-native-webview": "11.0.0",
+    "react-native-zeroconf": "^0.13.1",
     "react-navigation": "^4.4.3"
   },
   "devDependencies": {

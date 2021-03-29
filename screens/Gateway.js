@@ -7,6 +7,8 @@ import NewDeviceModal from '../components/NewDeviceModal';
 import PeriodicalPollingService from '../services/PeriodicalPollingService';
 import ModbusService from '../modbus/ModbusService';
 import firestore from '@react-native-firebase/firestore';
+import NetworkScanService from '../services/NetworkScanService';
+import { ActivityIndicator } from 'react-native';
 
 export default function Gateway({navigation}) {
   useEffect(() => {
@@ -17,6 +19,7 @@ export default function Gateway({navigation}) {
   const { config, setConfig } = useConfig();
   const [modalOpen, setModalOpen] = useState(false);
   const [isRunning, setRunning] = useState(PeriodicalPollingService.isRunning());
+  const [isScanning, setScanning] = useState(false);
 
   useEffect(() => { //TODO refactor
     const unsubscribe = navigation.addListener('focus', () => {
@@ -29,6 +32,18 @@ export default function Gateway({navigation}) {
     
     return unsubscribe;
   }, [navigation, config]);
+
+  useEffect(() => {
+    if (isScanning) {
+      let startScan = async () => {
+        await NetworkScanService.autoScan(processDevice);
+        setScanning(false);
+      };
+      startScan();
+    } else {
+      NetworkScanService.stop();
+    }
+  }, [isScanning]);
 
   const validate = (device) => {
     if (!device.name) {
@@ -51,8 +66,7 @@ export default function Gateway({navigation}) {
 
   const addDevice = (device) => {
     let newConfig = {
-      ...config,
-      devices: [...config.devices]
+      ...config
     };
     newConfig.devices.push(device);
     setConfig(newConfig);
@@ -102,6 +116,27 @@ export default function Gateway({navigation}) {
     return date.toTimeString().split(' ')[0];
   }
 
+  const processDevice = (device) => {
+    let newConfig = {
+      ...config
+    };
+    newConfig.devices.push(device);
+    setConfig(newConfig);
+  }
+
+  const onAutoScan = () => {
+    if (isScanning) {
+      setScanning(false);
+    } else {
+      let newConfig = {
+        ...config
+      };
+      newConfig.devices = [];
+      setConfig(newConfig);
+      setScanning(true);
+    }
+  }
+
   return (
     <>
       <View style={styles.container}>
@@ -110,7 +145,7 @@ export default function Gateway({navigation}) {
               icon="play"
               label="Start"
               onPress={() => onStart()}
-              disabled={config.devices.length === 0}
+              disabled={config.devices.length === 0 || isScanning}
               style={{
                 position: 'absolute',
                 top: 30,
@@ -135,7 +170,7 @@ export default function Gateway({navigation}) {
         <View style={{ flex: 1, flexDirection: "row", marginTop: 100 }}>
           {config.devices.map((element, index) => {
             return (
-              <Card key={index} style={{margin: 5, height: '15%', width: '45%'}}>
+              <Card key={index} style={{margin: 5, height: 100, width: '45%'}}>
                 <Card.Content>
                   <Title>{element.name}</Title>
                   <Paragraph>{element.ip}</Paragraph>
@@ -144,10 +179,18 @@ export default function Gateway({navigation}) {
             );
           })}
         </View>
+        <View style={{flex: 1}}>
+        {isScanning && 
+          <ActivityIndicator style={{marginBottom: 25}}
+            size='small'
+            color='#1976d2'/>
+        }
+        </View>
         <FAB
             icon="plus"
             label="Add"
             onPress={() => {setModalOpen(true)}}
+            disabled={isScanning || isRunning}
             style={{
               position: 'absolute',
               margin: 30,
@@ -156,9 +199,10 @@ export default function Gateway({navigation}) {
             }}
           />
           <FAB
-            icon="sync"
-            label="Scan"
-            onPress={() => {}}
+            icon={isScanning ? "stop" : "sync"}
+            label={isScanning ? "Stop" : "Scan"}
+            onPress={onAutoScan}
+            disabled={isRunning}
             style={{
               position: 'absolute',
               margin: 30,
