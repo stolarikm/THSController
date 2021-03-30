@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Dimensions, processColor, StatusBar } from 'react-native';
-import { Card, Title, Paragraph } from 'react-native-paper';
+import { Card, Title, Paragraph, Button } from 'react-native-paper';
 import { LineChart } from 'react-native-charts-wrapper';
 import { useOrientation } from '../hooks/useOrientation';
 import firestore from '@react-native-firebase/firestore';
 import { useConfig } from '../hooks/useConfig';
 import NavigationBar from 'react-native-navbar-color'
+import FileExportService from '../services/FileExportService';
 
 export default function Monitor({navigation}) {
   useEffect(() => {
@@ -59,19 +60,28 @@ export default function Monitor({navigation}) {
   return (
     <>
       <View style={styles.container}>
-        <View style={{ flexDirection: "row", marginTop: 5 }}>
-          {readings && readings.length > 0 && readings[readings.length - 1].devices.map((element, index) => {
-            return (
-              <Card key={index}>
-                <Card.Content>
-                  <Title>{element.value} °C</Title>
-                  <Paragraph>{element.name}</Paragraph>
-                </Card.Content>
-              </Card>
-            );
-          })}
+        <View style={{flex: 1}}>
+          <View style={{ flexDirection: "row", marginTop: 5 }}>
+            {readings && readings.length > 0 && readings[readings.length - 1].devices.map((element, index) => {
+              return (
+                <Card key={index} style={{marginTop: 15, margin: 5}}>
+                  <Card.Content>
+                    <Title>{element.value} °C</Title>
+                    <Paragraph>{element.name}</Paragraph>
+                  </Card.Content>
+                </Card>
+              );
+            })}
+          </View>
         </View>
-        <View style={{ position: 'absolute', bottom: 0, height: isPortrait ? 250 : screenHeight, width: screenWidth }}>
+        <View style={{ marginBottom: 10, position: 'absolute', bottom: 0, height: isPortrait ? 250 : screenHeight, width: screenWidth }}>
+          <Button 
+            icon="file" 
+            disabled={readings.length === 0}
+            onPress={() => FileExportService.exportToExcel(readings)} 
+            style={{alignSelf: 'flex-start'}}>
+            Export
+          </Button>
           <LineChart
             marker={{ enabled: true, digits: 1 }}
             xAxis={{

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {StatusBar, StyleSheet, View} from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
 import { TextInput, FAB } from 'react-native-paper';
-import auth from '@react-native-firebase/auth';
 import { Select } from '../components/DropDown';
 import { Chip } from 'react-native-paper';
 import { useConfig } from '../hooks/useConfig';
