@@ -30,31 +30,32 @@ export default class FileExportService {
     var result = []
     for (timeEntry of data) {
       for (deviceEntry of timeEntry.devices.filter(e => e.name === deviceName)) {
-        result.push({ Time: timeEntry.time, Temperature: deviceEntry.value });
+        result.push({ Time: timeEntry.time, Temperature: deviceEntry.temperature, Humidity: deviceEntry.humidity });
       }
     }
     return result;
   }
 
   static async exportToExcel(data) {
+    var directory = RNFS.DocumentDirectoryPath  +'/THSControllerExport/'; //save to documents in iOS
     if (Platform.OS === 'android') {
       var granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
-      if (!granted) {
+      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
         return;
       }
+      directory = RNFS.ExternalStorageDirectoryPath  +'/THSControllerExport/';  //save to external storage on android
     }
     
     var dataArray = FileExportService.preprocessData(data);
     var wb = XLSX.utils.book_new();
     for (deviceData of dataArray) {
-      
       var ws = XLSX.utils.json_to_sheet(deviceData.data);
       XLSX.utils.book_append_sheet(wb, ws, deviceData.deviceName);
     }
 
     const wbout = XLSX.write(wb, {type:'binary', bookType:"xlsx"});
-    RNFS.mkdir(RNFS.ExternalStorageDirectoryPath +'/THSControllerExport');
-    const filename = RNFS.ExternalStorageDirectoryPath + '/THSControllerExport/' + FileExportService.getFilename() + '.xlsx';
+    RNFS.mkdir(directory);
+    const filename = directory + FileExportService.getFilename() + '.xlsx';
     writeFile(filename, wbout, 'ascii')
       .then(()=>{ 
         Toast.show('File saved to ' + filename, Toast.LONG);

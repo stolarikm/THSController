@@ -93,11 +93,12 @@ export default function Gateway({navigation}) {
         devices: []
       };
       for (sensor of sensors) {
-        var temperature = await ModbusService.readTemperature(sensor.ip);
+        var { temperature, humidity } = await ModbusService.read(sensor.ip);
         var sensorData = {
           name: sensor.name,
           ip: sensor.ip,
-          value: temperature,
+          temperature: temperature,
+          humidity: humidity
         };
         data.devices.push(sensorData);
       }

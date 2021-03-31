@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Dimensions, processColor, StatusBar } from 'react-native';
-import { Card, Title, Paragraph, Button } from 'react-native-paper';
+import { Card, Title, Paragraph, Button, Switch } from 'react-native-paper';
 import { LineChart } from 'react-native-charts-wrapper';
 import { useOrientation } from '../hooks/useOrientation';
 import firestore from '@react-native-firebase/firestore';
 import { useConfig } from '../hooks/useConfig';
 import NavigationBar from 'react-native-navbar-color'
 import FileExportService from '../services/FileExportService';
+import { Text } from 'react-native';
 
 export default function Monitor({navigation}) {
   useEffect(() => {
@@ -26,6 +27,7 @@ export default function Monitor({navigation}) {
   }, []);
 
   const [readings, setReadings] = useState([]);
+  const [isHumidity, setisHumidity] = useState(false);
   const { config, setConfig } = useConfig();
   const isPortrait = useOrientation();
   var screenWidth = Dimensions.get('window').width;
@@ -49,10 +51,18 @@ export default function Monitor({navigation}) {
     return ips;
   }
 
-  const getReadings = (ip) => {
+  const getTemperatureReadingsOfDevice = (ip) => {
     var read = readings
       .filter(reading => reading.devices.some(device => device.ip === ip))
-      .map(reading => reading.devices.filter(device => device.ip === ip)[0].value); //TODO fix [0]
+      .map(reading => reading.devices.find(device => device.ip === ip).temperature);
+    console.log("[Firebase]", read);
+    return read;
+  }
+
+  const getHumidityReadingsOfDevice = (ip) => {
+    var read = readings
+      .filter(reading => reading.devices.some(device => device.ip === ip))
+      .map(reading => reading.devices.find(device => device.ip === ip).humidity);
     console.log("[Firebase]", read);
     return read;
   }
@@ -62,11 +72,19 @@ export default function Monitor({navigation}) {
       <View style={styles.container}>
         <View style={{flex: 1}}>
           <View style={{ flexDirection: "row", marginTop: 5 }}>
+            <Text style={{ fontWeight: !isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5 }}>Temperature</Text>
+            <Switch value={isHumidity} onValueChange={() => setisHumidity(!isHumidity)} trackColor={{true: 'lightgrey', false: 'lightgrey'}} thumbColor='#67daff'/>
+            <Text style={{ fontWeight: isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5, paddingRight: 30 }}>Humidity</Text>
+          </View>
+        </View>
+        <View style={{flex: 9}}>
+          <View style={{ flexDirection: "row", marginTop: 5 }}>
             {readings && readings.length > 0 && readings[readings.length - 1].devices.map((element, index) => {
               return (
                 <Card key={index} style={{marginTop: 15, margin: 5}}>
                   <Card.Content>
-                    <Title>{element.value} °C</Title>
+                    { isHumidity && <Title>{element.humidity}% RH</Title>}
+                    { !isHumidity && <Title>{element.temperature} °C</Title>}
                     <Paragraph>{element.name}</Paragraph>
                   </Card.Content>
                 </Card>
@@ -94,7 +112,7 @@ export default function Monitor({navigation}) {
             style={styles.chart}
             data={{
               dataSets: [...getSensorIps()].map((ip) => {
-                return { config: lineConfig, label: ip, values: getReadings(ip) };
+                return { config: lineConfig, label: ip, values: isHumidity ? getHumidityReadingsOfDevice(ip) : getTemperatureReadingsOfDevice(ip) };
               }),
             }}
           />
