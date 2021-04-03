@@ -32,12 +32,10 @@ export default function Commands({navigation}) {
   }, [navigation, config]);
 
   useEffect(() => {
-    console.log(command);
     setCanSend(command && command === '1' && value && targets.length !== 0);
   }, [command, value, targets]);
 
   const isSelected = (item) => {
-    console.log(targets);
     return targets.some(t => t.ip === item.ip);
   }
 

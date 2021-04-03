@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar, View, StyleSheet, Button, Text } from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
-import { Appbar, TextInput } from 'react-native-paper';
+import { TextInput, useTheme } from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { useConfig } from '../hooks/useConfig';
 
-export default function LoginScreen({navigation}) {
+export default function LoginScreen({ navigation }) {
   useEffect(() => {
     StatusBar.setBackgroundColor('#005cb2');
     NavigationBar.setColor('#005cb2');
@@ -19,6 +19,7 @@ export default function LoginScreen({navigation}) {
   const [error, setError] = useState("");
   const [isLoading, setLoading] = useState(false);
   const { config, setConfig } = useConfig();
+  const { colors } = useTheme();
 
   useEffect(() => { //TODO refactor
     const unsubscribe = navigation.addListener('focus', () => {
@@ -119,7 +120,7 @@ export default function LoginScreen({navigation}) {
             />
           }
           {error !== "" && <View style={{ alignItems: "center" }}>
-            <Text style={{color: theme.colors.error, marginBottom: 20}}>
+            <Text style={{color: colors.error, marginBottom: 20}}>
               {error}
             </Text>
           </View>}

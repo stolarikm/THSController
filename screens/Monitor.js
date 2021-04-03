@@ -8,6 +8,7 @@ import { useConfig } from '../hooks/useConfig';
 import NavigationBar from 'react-native-navbar-color'
 import FileExportService from '../services/FileExportService';
 import { Text } from 'react-native';
+import auth from '@react-native-firebase/auth';
 
 export default function Monitor({navigation}) {
   useEffect(() => {
@@ -16,17 +17,20 @@ export default function Monitor({navigation}) {
   }, []);
 
   useEffect(() => {
+    firestore().settings = {  };
     var unsubscribe = firestore().collection("readings")
       .onSnapshot((snapshot) => {
-        var snapshotData = [];
-        snapshot.forEach((doc) => snapshotData.push(doc.data()));
-        setReadings(snapshotData);
+        if (snapshot) {
+          //should be only 1 document
+          snapshot.forEach((doc) => doc.id === user.email && setReadings(doc.data()));
+        }
       });
       //cleanup
       return unsubscribe;
   }, []);
 
-  const [readings, setReadings] = useState([]);
+  const user = auth().currentUser;
+  const [readings, setReadings] = useState({ devices: [] });
   const [isHumidity, setisHumidity] = useState(false);
   const { config, setConfig } = useConfig();
   const isPortrait = useOrientation();
@@ -45,26 +49,18 @@ export default function Monitor({navigation}) {
     return unsubscribe;
   }, [navigation, config]);
 
-  const getSensorIps = () => {
-    var ips = new Set();
-    readings.forEach(reading => reading.devices.forEach(device => ips.add(device.ip)));
-    return ips;
-  }
-
   const getTemperatureReadingsOfDevice = (ip) => {
-    var read = readings
-      .filter(reading => reading.devices.some(device => device.ip === ip))
-      .map(reading => reading.devices.find(device => device.ip === ip).temperature);
-    console.log("[Firebase]", read);
-    return read;
+    var device = readings.devices.find(device => device.ip === ip);
+    if (device && device.readings) {
+      return device.readings.map(reading => reading.temperature);
+    }
   }
 
   const getHumidityReadingsOfDevice = (ip) => {
-    var read = readings
-      .filter(reading => reading.devices.some(device => device.ip === ip))
-      .map(reading => reading.devices.find(device => device.ip === ip).humidity);
-    console.log("[Firebase]", read);
-    return read;
+    var device = readings.devices.find(device => device.ip === ip);
+    if (device && device.readings) {
+      return device.readings.map(reading => reading.humidity);
+    }
   }
 
   return (
@@ -79,31 +75,33 @@ export default function Monitor({navigation}) {
         </View>
         <View style={{flex: 9}}>
           <View style={{ flexDirection: "row", marginTop: 5 }}>
-            {readings && readings.length > 0 && readings[readings.length - 1].devices.map((element, index) => {
-              return (
-                <Card key={index} style={{marginTop: 15, margin: 5}}>
-                  <Card.Content>
-                    { isHumidity && <Title>{element.humidity}% RH</Title>}
-                    { !isHumidity && <Title>{element.temperature} °C</Title>}
-                    <Paragraph>{element.name}</Paragraph>
-                  </Card.Content>
-                </Card>
-              );
+            {readings && readings.devices.map((device, index) => {
+              if (device.readings && device.readings.length > 0) {
+                return (
+                  <Card key={index} style={{marginTop: 15, margin: 5}}>
+                    <Card.Content>
+                      { isHumidity && <Title>{device.readings[device.readings.length - 1].humidity}% RH</Title>}
+                      { !isHumidity && <Title>{device.readings[device.readings.length - 1].temperature} °C</Title>}
+                      <Paragraph>{device.name}</Paragraph>
+                    </Card.Content>
+                  </Card>
+                );
+              }
             })}
           </View>
         </View>
         <View style={{ marginBottom: 10, position: 'absolute', bottom: 0, height: isPortrait ? 250 : screenHeight, width: screenWidth }}>
           <Button 
             icon="file" 
-            disabled={readings.length === 0}
-            onPress={() => FileExportService.exportToExcel(readings)} 
+            disabled={readings.devices.length === 0}
+            onPress={() => FileExportService.exportToExcel(readings.devices)} 
             style={{alignSelf: 'flex-start'}}>
             Export
           </Button>
           <LineChart
             marker={{ enabled: true, digits: 1 }}
             xAxis={{
-              valueFormatter: readings && readings.length > 0 ? readings.map((reading) => reading.time) : [],
+              valueFormatter: readings && readings.devices.length > 0 && readings.devices[0].readings ? readings.devices[0].readings.map((reading) => reading.time) : [],  //robit to podla najdlhsieho devicu
               drawLabels: true,
               position: "BOTTOM",
             }}
@@ -111,8 +109,8 @@ export default function Monitor({navigation}) {
             chartDescription={{ text: '' }}
             style={styles.chart}
             data={{
-              dataSets: [...getSensorIps()].map((ip) => {
-                return { config: lineConfig, label: ip, values: isHumidity ? getHumidityReadingsOfDevice(ip) : getTemperatureReadingsOfDevice(ip) };
+              dataSets: readings.devices.map(device => {
+                return { config: lineConfig, label: device.name, values: isHumidity ? getHumidityReadingsOfDevice(device.ip) : getTemperatureReadingsOfDevice(device.ip) };
               }),
             }}
           />

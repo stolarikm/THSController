@@ -17,26 +17,21 @@ export default class FileExportService {
     return `${YYYY}${MM}${DD}_${hh}${mm}${ss}_${millis}`;
   }
 
-  static preprocessData(data) {
-    return data[0].devices.map((device) => { 
+  static preprocessData(devices) {
+    return devices.map((device) => { 
       return { 
         deviceName: device.name, 
-        data: FileExportService.getDeviceData(data, device.name)
+        data: device.readings.map((reading) => {
+          return { 
+            Time: reading.time,
+            Temperature: reading.temperature,
+            Humidity: reading.humidity }
+        })
       }
     });
   }
 
-  static getDeviceData(data, deviceName) {
-    var result = []
-    for (timeEntry of data) {
-      for (deviceEntry of timeEntry.devices.filter(e => e.name === deviceName)) {
-        result.push({ Time: timeEntry.time, Temperature: deviceEntry.temperature, Humidity: deviceEntry.humidity });
-      }
-    }
-    return result;
-  }
-
-  static async exportToExcel(data) {
+  static async exportToExcel(devices) {
     var directory = RNFS.DocumentDirectoryPath  +'/THSControllerExport/'; //save to documents in iOS
     if (Platform.OS === 'android') {
       var granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
@@ -46,7 +41,7 @@ export default class FileExportService {
       directory = RNFS.ExternalStorageDirectoryPath  +'/THSControllerExport/';  //save to external storage on android
     }
     
-    var dataArray = FileExportService.preprocessData(data);
+    var dataArray = FileExportService.preprocessData(devices);
     var wb = XLSX.utils.book_new();
     for (deviceData of dataArray) {
       var ws = XLSX.utils.json_to_sheet(deviceData.data);

@@ -9,6 +9,7 @@ import ModbusService from '../modbus/ModbusService';
 import firestore from '@react-native-firebase/firestore';
 import NetworkScanService from '../services/NetworkScanService';
 import { ActivityIndicator } from 'react-native';
+import auth from '@react-native-firebase/auth';
 
 export default function Gateway({navigation}) {
   useEffect(() => {
@@ -16,6 +17,7 @@ export default function Gateway({navigation}) {
     NavigationBar.setColor('#005cb2');
   }, []);
 
+  const user = auth().currentUser;
   const { config, setConfig } = useConfig();
   const [modalOpen, setModalOpen] = useState(false);
   const [isRunning, setRunning] = useState(PeriodicalPollingService.isRunning());
@@ -86,31 +88,58 @@ export default function Gateway({navigation}) {
   };
 
   const pollSensorsSequentially = async (sensors) => {
-    console.log("[Poll]", sensors);
     if (sensors && sensors.length > 0) {
-      var data = { 
-        time: parseTime(new Date()),
-        devices: []
-      };
+      var updateData = [];
       for (sensor of sensors) {
         var { temperature, humidity } = await ModbusService.read(sensor.ip);
-        var sensorData = {
+        var data = { 
           name: sensor.name,
           ip: sensor.ip,
-          temperature: temperature,
-          humidity: humidity
+          readings: [{
+            time: parseTime(new Date()),
+            temperature: temperature,
+            humidity: humidity
+          }]
         };
-        data.devices.push(sensorData);
+        updateData.push(data);
       }
-      upload(data);
+      upload(updateData);
     }
   }
 
-  const upload = (data) => {
+  const upload = async (updateDevices) => {
+    setDocument(merge((await getDocument()).data(), updateDevices));
+  }
+
+  const merge = (data, newData) => {
+    if (!data || !data.devices) {
+      //init
+      data = { devices: [] };
+    }
+
+    for (updateDevice of newData) {
+      var device = data.devices.find((a) => a.ip === updateDevice.ip);
+      if (device) {
+        device.readings = device.readings.concat(updateDevice.readings);
+      } else {
+        data.devices.push(updateDevice);
+      }
+    }
+    return data;
+  }
+
+  const getDocument = async () => {
+    return await firestore()
+      .collection("readings")
+      .doc(user.email)
+      .get();
+  }
+
+  const setDocument = (doc) => {
     firestore()
-        .collection("readings")
-        .doc()
-        .set(data);
+      .collection("readings")
+      .doc(user.email)
+      .set(doc);
   }
 
   const parseTime = (date) => {
