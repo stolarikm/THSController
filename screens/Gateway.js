@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {StatusBar, StyleSheet, View} from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
-import { FAB, Card, Title, Paragraph } from 'react-native-paper';
+import { FAB, Card, Title, Paragraph, IconButton } from 'react-native-paper';
 import { useConfig } from '../hooks/useConfig';
 import NewDeviceModal from '../components/NewDeviceModal';
 import PeriodicalPollingService from '../services/PeriodicalPollingService';
@@ -20,6 +20,7 @@ export default function Gateway({navigation}) {
   const user = auth().currentUser;
   const { config, setConfig } = useConfig();
   const [modalOpen, setModalOpen] = useState(false);
+  const [editedDevice, setEditedDevice] = useState(null);
   const [isRunning, setRunning] = useState(PeriodicalPollingService.isRunning());
   const [isScanning, setScanning] = useState(false);
 
@@ -54,25 +55,41 @@ export default function Gateway({navigation}) {
     if (!device.ip) {
       return { ok: false, message: "Please provide a device address"}
     }
-    if (config.devices.some(d => d.name === device.name)) {
+    if (config.devices.some(d => d.name === device.name) && (!editedDevice || device.name !== editedDevice.name)) {
       return { ok: false, message: "Device with this name already exists"}
     }
-    if (config.devices.some(d => d.name === device.name)) {
-      return { ok: false, message: "Device with this name already exists"}
-    }
-    if (config.devices.some(d => d.ip === device.ip)) {
+    if (config.devices.some(d => d.ip === device.ip) && (!editedDevice || device.ip !== editedDevice.ip)) {
       return { ok: false, message: "Device with this address already exists"}
     }
     return { ok: true };
   }
 
   const addDevice = (device) => {
-    let newConfig = {
-      ...config
-    };
-    newConfig.devices.push(device);
-    setConfig(newConfig);
+    if (editedDevice) {
+      let newConfig = {
+        ...config
+      };
+      var updatedDeviceRef = newConfig.devices.find(d => d.ip === editedDevice.ip);
+      updatedDeviceRef.name = device.name;
+      updatedDeviceRef.ip = device.ip;
+      setConfig(newConfig);
+    } else {
+      let newConfig = {
+        ...config
+      };
+      newConfig.devices.push(device);
+      setConfig(newConfig);
+    }
     setModalOpen(false);
+    setEditedDevice(null);
+  }
+  
+  const deleteDevice = (device) => {
+    let newConfig = {
+      ...config,
+      devices: config.devices.filter(d => d.ip !== device.ip)
+    };
+    setConfig(newConfig);
   }
 
   const onStart = () => {
@@ -204,6 +221,18 @@ export default function Gateway({navigation}) {
                 <Card.Content>
                   <Title>{element.name}</Title>
                   <Paragraph>{element.ip}</Paragraph>
+                  <View style={{ position: 'absolute', right: 0}}>
+                    <IconButton
+                      icon="pencil"
+                      color="grey"
+                      onPress={() => {setEditedDevice(element); setModalOpen(true)}}
+                    />
+                    <IconButton
+                      icon="delete"
+                      color="grey"
+                      onPress={() => deleteDevice(element)}
+                    />
+                  </View>
                 </Card.Content>
               </Card>
             );
@@ -219,7 +248,7 @@ export default function Gateway({navigation}) {
         <FAB
             icon="plus"
             label="Add"
-            onPress={() => {setModalOpen(true)}}
+            onPress={() => {setModalOpen(true); setEditedDevice(null)}}
             disabled={isScanning || isRunning}
             style={{
               position: 'absolute',
@@ -242,8 +271,9 @@ export default function Gateway({navigation}) {
           />
       </View>
       <NewDeviceModal
+        updatedDevice={editedDevice}
         visible={modalOpen}
-        close={() => setModalOpen(false)}
+        close={() => {setModalOpen(false); setEditedDevice(null)}}
         validate={validate}
         confirm={addDevice}
       />

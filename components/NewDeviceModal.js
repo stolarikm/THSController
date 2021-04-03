@@ -1,16 +1,22 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Text } from 'react-native';
 import {StyleSheet} from 'react-native';
 import Modal from 'react-native-modal';
 import { Button, Card, TextInput, Title } from 'react-native-paper';
 
-const NewDeviceModal = ({ visible, close, confirm, validate }) => {
+const NewDeviceModal = ({ updatedDevice, visible, close, confirm, validate }) => {
 
   const [error, setError] = useState("");
-  const [device, setDevice] = useState({
+  const [device, setDevice] = useState(updatedDevice ? updatedDevice : {
     name: "",
     ip: ""
   });
+
+  useEffect(() => {
+    if (updatedDevice) {
+      setDevice(updatedDevice);
+    }
+  }, [updatedDevice]);
 
   const clear = () => {
     setDevice({
@@ -39,7 +45,8 @@ const NewDeviceModal = ({ visible, close, confirm, validate }) => {
     <Modal isVisible={visible} onBackdropPress={processClose} onBackButtonPress={processClose}>
       <Card style={styles.card}>
         <Card.Content style={styles.content}>
-          <Title style={{marginBottom: 20}}>Set up new device</Title>
+          {!updatedDevice && <Title style={{marginBottom: 20}}>Set up new device</Title>}
+          {updatedDevice && <Title style={{marginBottom: 20}}>Edit device</Title>}
           <TextInput
             placeholder='Device name'
             label='Device name'
