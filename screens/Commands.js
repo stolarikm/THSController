@@ -6,6 +6,8 @@ import { Select } from '../components/DropDown';
 import { Chip } from 'react-native-paper';
 import { useConfig } from '../hooks/useConfig';
 import ModbusService from '../modbus/ModbusService';
+import Toast from 'react-native-simple-toast';
+import LoadingOverlay from '../components/LoadingOverlay';
 
 export default function Commands({navigation}) {
   useEffect(() => {
@@ -18,6 +20,7 @@ export default function Commands({navigation}) {
   const [targets, setTargets] = useState([]);
   const [canSend, setCanSend] = useState(false);
   const { config, setConfig } = useConfig();
+  const [isLoading, setLoading] = useState(false);
 
   useEffect(() => { //TODO refactor
     const unsubscribe = navigation.addListener('focus', () => {
@@ -49,6 +52,11 @@ export default function Commands({navigation}) {
     setTargets(newTargets);
   }
 
+  const reset = () => {
+    setValue("");
+    setTargets([]);
+  }
+
   const commandList = [
     { label: 'Temperature correction', value: '1' },
   ];
@@ -57,8 +65,12 @@ export default function Commands({navigation}) {
     if (!canSend) {
       return;
     }
+    setLoading(true);
     var result = await ModbusService.writeTemperatureCorrection(targets[0].ip, parseInt(value));
-    console.log(result);
+    reset();
+    setLoading(false);
+    console.log(result);  //TODO check result
+    Toast.show('Command successfully sent');
   }
 
   return (
@@ -82,9 +94,15 @@ export default function Commands({navigation}) {
           </View>
         </View>
         <View style={{ margin: 10, flex: 3 }}>
-          {config.devices.map((item, index) => {
-            return(<Chip key={index} selected={isSelected(item)} onPress={() => select(item)}>{item.name}</Chip>);
-          })}
+          <View style={{flexDirection: 'row'}}>
+            {config.devices.map((item, index) => {
+              return(
+                <Chip key={index} selected={isSelected(item)} onPress={() => select(item)} style={{margin: 5}}>
+                  {item.name}
+                </Chip>
+                );
+            })}
+          </View>
         </View>
           <FAB
             icon="send"
@@ -99,6 +117,7 @@ export default function Commands({navigation}) {
             }}
           />
       </View>
+      {isLoading && <LoadingOverlay />}
     </>
   );
 }
