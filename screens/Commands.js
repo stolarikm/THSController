@@ -8,6 +8,8 @@ import { useConfig } from '../hooks/useConfig';
 import ModbusService from '../modbus/ModbusService';
 import Toast from 'react-native-simple-toast';
 import LoadingOverlay from '../components/LoadingOverlay';
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 
 export default function Commands({navigation}) {
   useEffect(() => {
@@ -15,12 +17,14 @@ export default function Commands({navigation}) {
     NavigationBar.setColor('#005cb2');
   }, []);
 
+  const user = auth().currentUser;
   const [command, setCommand] = useState("");
   const [value, setValue] = useState("");
   const [targets, setTargets] = useState([]);
   const [canSend, setCanSend] = useState(false);
   const { config, setConfig } = useConfig();
   const [isLoading, setLoading] = useState(false);
+  const [readings, setReadings] = useState({ devices: [] });
 
   useEffect(() => { //TODO refactor
     const unsubscribe = navigation.addListener('focus', () => {
@@ -33,6 +37,19 @@ export default function Commands({navigation}) {
     
     return unsubscribe;
   }, [navigation, config]);
+
+  useEffect(() => {
+    firestore().settings = {  };
+    var unsubscribe = firestore().collection("readings")
+      .onSnapshot((snapshot) => {
+        if (snapshot) {
+          //should be only 1 document
+          snapshot.forEach((doc) => doc.id === user.email && setReadings(doc.data()));
+        }
+      });
+      //cleanup
+      return unsubscribe;
+  }, []);
 
   useEffect(() => {
     setCanSend(command && command === '1' && value && targets.length !== 0);
@@ -95,7 +112,7 @@ export default function Commands({navigation}) {
         </View>
         <View style={{ margin: 10, flex: 3 }}>
           <View style={{flexDirection: 'row'}}>
-            {config.devices.map((item, index) => {
+            {readings.devices.map((item, index) => {
               return(
                 <Chip key={index} selected={isSelected(item)} onPress={() => select(item)} style={{margin: 5}}>
                   {item.name}

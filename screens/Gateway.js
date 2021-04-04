@@ -6,10 +6,10 @@ import { useConfig } from '../hooks/useConfig';
 import NewDeviceModal from '../components/NewDeviceModal';
 import PeriodicalPollingService from '../services/PeriodicalPollingService';
 import ModbusService from '../modbus/ModbusService';
-import firestore from '@react-native-firebase/firestore';
 import NetworkScanService from '../services/NetworkScanService';
 import { ActivityIndicator } from 'react-native';
-import auth from '@react-native-firebase/auth';
+import FirebaseService from '../services/FirebaseService';
+
 
 export default function Gateway({navigation}) {
   useEffect(() => {
@@ -17,7 +17,6 @@ export default function Gateway({navigation}) {
     NavigationBar.setColor('#005cb2');
   }, []);
 
-  const user = auth().currentUser;
   const { config, setConfig } = useConfig();
   const [modalOpen, setModalOpen] = useState(false);
   const [editedDevice, setEditedDevice] = useState(null);
@@ -120,45 +119,10 @@ export default function Gateway({navigation}) {
         };
         updateData.push(data);
       }
-      upload(updateData);
+      FirebaseService.uploadReadings(updateData);
     }
   }
-
-  const upload = async (updateDevices) => {
-    setDocument(merge((await getDocument()).data(), updateDevices));
-  }
-
-  const merge = (data, newData) => {
-    if (!data || !data.devices) {
-      //init
-      data = { devices: [] };
-    }
-
-    for (updateDevice of newData) {
-      var device = data.devices.find((a) => a.ip === updateDevice.ip);
-      if (device) {
-        device.readings = device.readings.concat(updateDevice.readings);
-      } else {
-        data.devices.push(updateDevice);
-      }
-    }
-    return data;
-  }
-
-  const getDocument = async () => {
-    return await firestore()
-      .collection("readings")
-      .doc(user.email)
-      .get();
-  }
-
-  const setDocument = (doc) => {
-    firestore()
-      .collection("readings")
-      .doc(user.email)
-      .set(doc);
-  }
-
+  
   const parseTime = (date) => {
     return date.toTimeString().split(' ')[0];
   }
