@@ -10,6 +10,7 @@ import Toast from 'react-native-simple-toast';
 import LoadingOverlay from '../components/LoadingOverlay';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
+import FirebaseService from '../services/FirebaseService';
 
 export default function Commands({navigation}) {
   useEffect(() => {
@@ -52,7 +53,7 @@ export default function Commands({navigation}) {
   }, []);
 
   useEffect(() => {
-    setCanSend(command && command === '1' && value && targets.length !== 0);
+    setCanSend(command && value && targets.length !== 0);
   }, [command, value, targets]);
 
   const isSelected = (item) => {
@@ -75,7 +76,7 @@ export default function Commands({navigation}) {
   }
 
   const commandList = [
-    { label: 'Temperature correction', value: '1' },
+    { label: 'Temperature correction', value: 'temp_corr' },
   ];
 
   const sendCommand = async () => {
@@ -83,10 +84,19 @@ export default function Commands({navigation}) {
       return;
     }
     setLoading(true);
-    var result = await ModbusService.writeTemperatureCorrection(targets[0].ip, parseInt(value));
+
+    //TODO presunut do Gateway
+    //var result = await ModbusService.writeTemperatureCorrection(targets[0].ip, parseInt(value));
+
+    var commandData = {
+      command: command,
+      value: value,
+      ips: targets.map(t => t.ip)
+    }
+    await FirebaseService.queueCommand(commandData);
+
     reset();
     setLoading(false);
-    console.log(result);  //TODO check result
     Toast.show('Command successfully sent');
   }
 
