@@ -35,11 +35,9 @@ export default class ModbusService {
     static async writeTemperatureCorrection(ip, correction) {
         try {
             var connectLog = await ModbusProvider.connect(ip, 502);
-            console.log(connectLog);
             var value = await ModbusProvider.write(2000, correction);
             console.log(value);
             var disconnectLog = await ModbusProvider.disconnect();
-            console.log(disconnectLog);
         } catch (error) {
             console.error("Error sending command: " + error);
         }

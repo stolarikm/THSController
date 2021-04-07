@@ -84,10 +84,6 @@ export default function Commands({navigation}) {
       return;
     }
     setLoading(true);
-
-    //TODO presunut do Gateway
-    //var result = await ModbusService.writeTemperatureCorrection(targets[0].ip, parseInt(value));
-
     var commandData = {
       command: command,
       value: value,

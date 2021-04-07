@@ -52,11 +52,28 @@ export default class FirebaseService {
         return data;
     }
 
+    static dequeue = (data) => {
+        if (!data || !data.commands || data.commands.length === 0) {
+            return { command: null, data: null };
+        }
+        var command = data.commands.shift();
+        
+        return { command, data };
+    }
+
     static uploadReadings = async (updateDevices) => {
         FirebaseService.setDocument(FirebaseService.mergeReadings((await FirebaseService.getDocument()).data(), updateDevices));
     }
 
     static queueCommand = async (command) => {
         await FirebaseService.setDocument(FirebaseService.enqueue((await FirebaseService.getDocument()).data(), command));
+    }
+
+    static popCommand = async () => {
+        var { command, data } = FirebaseService.dequeue((await FirebaseService.getDocument()).data());
+        if (data != null) {
+            await FirebaseService.setDocument(data);
+        }
+        return command;
     }
 }

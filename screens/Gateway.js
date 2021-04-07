@@ -104,6 +104,18 @@ export default function Gateway({navigation}) {
   };
 
   const pollSensorsSequentially = async (sensors) => {
+    //send commands
+    var command = await FirebaseService.popCommand();
+    if (command) {
+      if (command.command === "temp_corr") { //TODO typy commandov
+        for (ip of command.ips) {
+          console.log(ip);
+          await ModbusService.writeTemperatureCorrection(ip, parseInt(command.value));
+        }
+      }
+    }
+
+    //monitor
     if (sensors && sensors.length > 0) {
       var updateData = [];
       for (sensor of sensors) {
