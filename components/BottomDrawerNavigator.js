@@ -3,10 +3,10 @@ import React from 'react';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs'; 
 import Icon from 'react-native-vector-icons/MaterialIcons'; 
 import { View } from 'react-native';
-import Monitor from '../screens/Monitor';
-import Commands from '../screens/Commands';
 import { useConfig } from '../hooks/useConfig';
-import Gateway from '../screens/Gateway';
+import MonitorScreen from '../screens/MonitorScreen';
+import CommandsScreen from '../screens/CommandsScreen';
+import GatewayScreen from '../screens/GatewayScreen';
 
 const Tab = createMaterialBottomTabNavigator();
 
@@ -20,7 +20,7 @@ const BottomDrawerNavigator = () => {
             inactiveColor="#90caf9"  
             barStyle={{ backgroundColor: '#1976d2' }}
         >
-            <Tab.Screen name="Monitor" component={Monitor} options={
+            <Tab.Screen name="Monitor" component={MonitorScreen} options={
                 {  
                     tabBarLabel:'Monitor',  
                     tabBarIcon: ({ color  }) => (  
@@ -29,7 +29,7 @@ const BottomDrawerNavigator = () => {
                         </View>),  
                 } 
             }/>
-            <Tab.Screen name="Commands" component={Commands} options={
+            <Tab.Screen name="Commands" component={CommandsScreen} options={
                 {  
                     tabBarLabel:'Commands',  
                     tabBarIcon: ({ color  }) => (  
@@ -39,7 +39,7 @@ const BottomDrawerNavigator = () => {
                 }  
             }/>
             {config.mode === 'gateway' && 
-                <Tab.Screen name="Gateway" component={Gateway} options={
+                <Tab.Screen name="Gateway" component={GatewayScreen} options={
                     {  
                         tabBarLabel:'Gateway',  
                         tabBarIcon: ({ color  }) => (  

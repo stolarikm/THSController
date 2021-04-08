@@ -5,13 +5,13 @@ import { FAB, Card, Title, Paragraph, IconButton } from 'react-native-paper';
 import { useConfig } from '../hooks/useConfig';
 import NewDeviceModal from '../components/NewDeviceModal';
 import PeriodicalPollingService from '../services/PeriodicalPollingService';
-import ModbusService from '../modbus/ModbusService';
+import ModbusService from '../services/ModbusService';
 import NetworkScanService from '../services/NetworkScanService';
 import { ActivityIndicator } from 'react-native';
 import FirebaseService from '../services/FirebaseService';
 
 
-export default function Gateway({navigation}) {
+export default function GatewayScreen({navigation}) {
   useEffect(() => {
     StatusBar.setBackgroundColor('#005cb2');
     NavigationBar.setColor('#005cb2');

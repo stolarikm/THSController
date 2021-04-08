@@ -10,7 +10,7 @@ import FileExportService from '../services/FileExportService';
 import { Text } from 'react-native';
 import auth from '@react-native-firebase/auth';
 
-export default function Monitor({navigation}) {
+export default function MonitorScreen({navigation}) {
   useEffect(() => {
     StatusBar.setBackgroundColor('#005cb2');
     NavigationBar.setColor('#005cb2');

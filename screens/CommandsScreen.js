@@ -5,14 +5,13 @@ import { TextInput, FAB } from 'react-native-paper';
 import { Select } from '../components/DropDown';
 import { Chip } from 'react-native-paper';
 import { useConfig } from '../hooks/useConfig';
-import ModbusService from '../modbus/ModbusService';
 import Toast from 'react-native-simple-toast';
 import LoadingOverlay from '../components/LoadingOverlay';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import FirebaseService from '../services/FirebaseService';
 
-export default function Commands({navigation}) {
+export default function CommandsScreen({navigation}) {
   useEffect(() => {
     StatusBar.setBackgroundColor('#005cb2');
     NavigationBar.setColor('#005cb2');

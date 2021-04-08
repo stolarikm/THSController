@@ -1,11 +1,11 @@
-import {useEffect, useState} from 'react';
-import {Dimensions} from 'react-native';
+import { useEffect, useState } from 'react';
+import { Dimensions } from 'react-native';
 
-export function useOrientation(){
+export function useOrientation() {
   const [isPortrait, setIsPortrait] = useState(true);
 
   useEffect(() => {
-    Dimensions.addEventListener('change', ({window: {width, height}})=>{
+    Dimensions.addEventListener('change', ({ window: { width, height } }) => {
       if (width < height) {
         setIsPortrait(true)
       } else {
