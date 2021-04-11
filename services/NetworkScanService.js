@@ -1,6 +1,6 @@
 import GetSubnetMask from 'react-native-get-subnet-mask';
 import NetmaskModule from 'netmask';
-import ModbusService from '../services/ModbusService';
+import ModbusService from './ModbusService';
 
 export default class NetworkScanService {
 

@@ -29,7 +29,7 @@ export default class FirebaseService {
     static mergeReadings = (data, newData) => {
         if (!data || !data.devices) {
             //init
-            data = defaultModel();
+            data = this.defaultModel();
         }
 
         for (updateDevice of newData) {

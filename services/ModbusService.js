@@ -71,7 +71,7 @@ export default class ModbusService {
     };
 
     //TODO generalize
-    static async read(ip) {
+    static async readTemperatureAndHumidity(ip) {
             await this.connect(ip, 502);
             var temp = await this.read(0);   //temperature register
             var rh = await this.read(10);  //RH register
