@@ -7,18 +7,20 @@ import { useConfig } from '../hooks/useConfig';
 import MonitorScreen from '../screens/MonitorScreen';
 import CommandsScreen from '../screens/CommandsScreen';
 import GatewayScreen from '../screens/GatewayScreen';
+import { useOrientation } from '../hooks/useOrientation';
 
 const Tab = createMaterialBottomTabNavigator();
 
 const BottomDrawerNavigator = () => {
     const { config } = useConfig();
+    const isPortrait = useOrientation();
 
     return (
         <Tab.Navigator 
             initialRouteName="Monitor" 
             activeColor="#f0edf6"  
             inactiveColor="#90caf9"  
-            barStyle={{ backgroundColor: '#1976d2' }}
+            barStyle={{ backgroundColor: '#1976d2', display: !isPortrait ? 'none' : 'flex'}}
         >
             <Tab.Screen name="Monitor" component={MonitorScreen} options={
                 {  

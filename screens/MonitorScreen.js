@@ -34,8 +34,6 @@ export default function MonitorScreen({navigation}) {
   const [isHumidity, setisHumidity] = useState(false);
   const { config, setConfig } = useConfig();
   const isPortrait = useOrientation();
-  var screenWidth = Dimensions.get('window').width;
-  var screenHeight = Dimensions.get('window').height;
 
   useEffect(() => { //TODO refactor
     const unsubscribe = navigation.addListener('focus', () => {
@@ -66,36 +64,38 @@ export default function MonitorScreen({navigation}) {
   return (
     <>
       <View style={styles.container}>
-        <View style={{flex: 1}}>
-          <View style={{ flexDirection: "row", marginTop: 5 }}>
-            <Text style={{ fontWeight: !isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5 }}>Temperature</Text>
-            <Switch value={isHumidity} onValueChange={() => setisHumidity(!isHumidity)} trackColor={{true: 'lightgrey', false: 'lightgrey'}} thumbColor='#67daff'/>
-            <Text style={{ fontWeight: isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5, paddingRight: 30 }}>Humidity</Text>
+        <View style={!isPortrait ? {display: 'none'} : {}}>
+          <View style={{flex: 1}}>
+            <View style={{ flexDirection: "row", marginTop: 5 }}>
+              <Text style={{ fontWeight: !isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5 }}>Temperature</Text>
+              <Switch value={isHumidity} onValueChange={() => setisHumidity(!isHumidity)} trackColor={{true: 'lightgrey', false: 'lightgrey'}} thumbColor='#67daff'/>
+              <Text style={{ fontWeight: isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5, paddingRight: 30 }}>Humidity</Text>
+            </View>
+          </View>
+          <View style={{flex: 9}}>
+            <View style={{ flexDirection: "row", marginTop: 5 }}>
+              {readings && readings.devices.map((device, index) => {
+                if (device.readings && device.readings.length > 0) {
+                  return (
+                    <Card key={index} style={{marginTop: 15, margin: 5}}>
+                      <Card.Content>
+                        { isHumidity && <Title>{device.readings[device.readings.length - 1].humidity}% RH</Title>}
+                        { !isHumidity && <Title>{device.readings[device.readings.length - 1].temperature} °C</Title>}
+                        <Paragraph>{device.name}</Paragraph>
+                      </Card.Content>
+                    </Card>
+                  );
+                }
+              })}
+            </View>
           </View>
         </View>
-        <View style={{flex: 9}}>
-          <View style={{ flexDirection: "row", marginTop: 5 }}>
-            {readings && readings.devices.map((device, index) => {
-              if (device.readings && device.readings.length > 0) {
-                return (
-                  <Card key={index} style={{marginTop: 15, margin: 5}}>
-                    <Card.Content>
-                      { isHumidity && <Title>{device.readings[device.readings.length - 1].humidity}% RH</Title>}
-                      { !isHumidity && <Title>{device.readings[device.readings.length - 1].temperature} °C</Title>}
-                      <Paragraph>{device.name}</Paragraph>
-                    </Card.Content>
-                  </Card>
-                );
-              }
-            })}
-          </View>
-        </View>
-        <View style={{ marginBottom: 10, position: 'absolute', bottom: 0, height: isPortrait ? 250 : screenHeight, width: screenWidth }}>
+        <View style={{ marginBottom: 10, position: 'absolute', bottom: 0, height: isPortrait ? 250 : '100%', width: '100%'}}>
           <Button 
             icon="file" 
             disabled={readings.devices.length === 0}
             onPress={() => FileExportService.exportToExcel(readings.devices)} 
-            style={{alignSelf: 'flex-start'}}>
+            style={{alignSelf: 'flex-start', display: !isPortrait ? 'none' : 'flex' }}>
             Export
           </Button>
           <LineChart

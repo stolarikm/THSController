@@ -119,7 +119,7 @@ export default function GatewayScreen({navigation}) {
     if (sensors && sensors.length > 0) {
       var updateData = [];
       for (sensor of sensors) {
-        var { temperature, humidity } = await ModbusService.read(sensor.ip);
+        var { temperature, humidity } = await ModbusService.readTemperatureAndHumidity(sensor.ip);
         var data = { 
           name: sensor.name,
           ip: sensor.ip,
