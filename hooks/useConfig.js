@@ -1,4 +1,5 @@
 import React, { useContext, useState } from 'react';
+import RNFS from 'react-native-fs';
 
 const ConfigContext = React.createContext();
 const ConfigUpdateContext = React.createContext();
@@ -14,7 +15,11 @@ const ConfigProvider = ({ children }) => {
     const [config, setConfig] = useState({
         screenName: "",
         mode: "client",
-        devices: []
+        devices: [],
+        gatewayInterval: "30",
+        ipSuffix: "68",
+        networkPort: "502",
+        exportDirectory: RNFS.ExternalStorageDirectoryPath + '/THSControllerExport/'
     });
   
     return (

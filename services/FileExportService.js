@@ -31,14 +31,15 @@ export default class FileExportService {
     });
   }
 
-  static async exportToExcel(devices) {
-    var directory = RNFS.DocumentDirectoryPath  +'/THSControllerExport/'; //save to documents in iOS
+  static async exportToExcel(devices, directory) {
     if (Platform.OS === 'android') {
       var granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
       if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
         return;
       }
-      directory = RNFS.ExternalStorageDirectoryPath  +'/THSControllerExport/';  //save to external storage on android
+    }
+    if (directory.slice(-1) !== '/') {
+      directory += '/';
     }
     
     var dataArray = FileExportService.preprocessData(devices);

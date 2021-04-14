@@ -71,8 +71,8 @@ export default class ModbusService {
     };
 
     //TODO generalize
-    static async readTemperatureAndHumidity(ip) {
-            await this.connect(ip, 502);
+    static async readTemperatureAndHumidity(ip, port) {
+            await this.connect(ip, port);
             var temp = await this.read(0);   //temperature register
             var rh = await this.read(10);  //RH register
             await this.disconnect();
@@ -83,9 +83,9 @@ export default class ModbusService {
     };
 
     //TODO generalize
-    static async writeTemperatureCorrection(ip, correction) {
+    static async writeTemperatureCorrection(ip, port, correction) {
         try {
-            var connectLog = await this.connect(ip, 502);
+            var connectLog = await this.connect(ip, port);
             var value = await this.write(2000, correction);
             console.log(value);
             var disconnectLog = await this.disconnect();
@@ -94,9 +94,9 @@ export default class ModbusService {
         }
     };
 
-    static async isDevicePresent(ip) {
+    static async isDevicePresent(ip, port) {
         try {
-            await this.connect(ip, 502);
+            await this.connect(ip, port);
             await this.disconnect();
             return true;
         } catch (error) {

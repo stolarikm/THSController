@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {StatusBar, StyleSheet, View} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import NavigationBar from 'react-native-navbar-color'
 import { FAB, Card, Title, Paragraph, IconButton } from 'react-native-paper';
 import { useConfig } from '../hooks/useConfig';
@@ -23,6 +24,8 @@ export default function GatewayScreen({navigation}) {
   const [isRunning, setRunning] = useState(PeriodicalPollingService.isRunning());
   const [isScanning, setScanning] = useState(false);
 
+  const DEVICES = 'DEVICES';
+
   useEffect(() => { //TODO refactor
     const unsubscribe = navigation.addListener('focus', () => {
       let newConfig = {
@@ -38,7 +41,10 @@ export default function GatewayScreen({navigation}) {
   useEffect(() => {
     if (isScanning) {
       let startScan = async () => {
-        await NetworkScanService.autoScan(processDevice);
+        let port = parseInt(config.networkPort);
+        console.log(port);
+        let commonIpSuffix = config.ipSuffix;
+        await NetworkScanService.autoScan(saveDevice, port, commonIpSuffix);
         setScanning(false);
       };
       startScan();
@@ -46,6 +52,8 @@ export default function GatewayScreen({navigation}) {
       NetworkScanService.stop();
     }
   }, [isScanning]);
+
+  
 
   const validate = (device) => {
     if (!device.name) {
@@ -65,35 +73,18 @@ export default function GatewayScreen({navigation}) {
 
   const addDevice = (device) => {
     if (editedDevice) {
-      let newConfig = {
-        ...config
-      };
-      var updatedDeviceRef = newConfig.devices.find(d => d.ip === editedDevice.ip);
-      updatedDeviceRef.name = device.name;
-      updatedDeviceRef.ip = device.ip;
-      setConfig(newConfig);
+      editDevice(device);
     } else {
-      let newConfig = {
-        ...config
-      };
-      newConfig.devices.push(device);
-      setConfig(newConfig);
+      saveDevice(device);
     }
     setModalOpen(false);
     setEditedDevice(null);
   }
-  
-  const deleteDevice = (device) => {
-    let newConfig = {
-      ...config,
-      devices: config.devices.filter(d => d.ip !== device.ip)
-    };
-    setConfig(newConfig);
-  }
 
   const onStart = () => {
+    let timeout = parseInt(config.gatewayInterval);
     if (config.devices.length > 0) {
-      PeriodicalPollingService.start(() => pollSensorsSequentially(config.devices), 15000);
+      PeriodicalPollingService.start(() => pollSensorsSequentially(config.devices), timeout * 1000);
       setRunning(true);
     }
   };
@@ -104,13 +95,14 @@ export default function GatewayScreen({navigation}) {
   };
 
   const pollSensorsSequentially = async (sensors) => {
+    let port = parseInt(config.networkPort);
     //send commands
     var command = await FirebaseService.popCommand();
     if (command) {
       if (command.command === "temp_corr") { //TODO typy commandov
         for (ip of command.ips) {
           console.log(ip);
-          await ModbusService.writeTemperatureCorrection(ip, parseInt(command.value));
+          await ModbusService.writeTemperatureCorrection(ip, port, parseInt(command.value));
         }
       }
     }
@@ -119,7 +111,7 @@ export default function GatewayScreen({navigation}) {
     if (sensors && sensors.length > 0) {
       var updateData = [];
       for (sensor of sensors) {
-        var { temperature, humidity } = await ModbusService.readTemperatureAndHumidity(sensor.ip);
+        var { temperature, humidity } = await ModbusService.readTemperatureAndHumidity(sensor.ip, port);
         var data = { 
           name: sensor.name,
           ip: sensor.ip,
@@ -139,25 +131,52 @@ export default function GatewayScreen({navigation}) {
     return date.toTimeString().split(' ')[0];
   }
 
-  const processDevice = (device) => {
-    let newConfig = {
-      ...config
-    };
-    newConfig.devices.push(device);
-    setConfig(newConfig);
-  }
-
   const onAutoScan = () => {
     if (isScanning) {
       setScanning(false);
     } else {
-      let newConfig = {
-        ...config
-      };
-      newConfig.devices = [];
-      setConfig(newConfig);
+      setDevices([]);
       setScanning(true);
     }
+  }
+
+  const saveDevice = async (device) => {
+    let newDevices = await getDevices();
+    newDevices.push(device);
+    await setDevices(newDevices);
+  }
+
+  const editDevice = async (device) => {
+    let newDevices = await getDevices();
+    var updatedDeviceRef = newDevices.find(d => d.ip === editedDevice.ip);
+    updatedDeviceRef.name = device.name;
+    updatedDeviceRef.ip = device.ip;
+    await setDevices(newDevices);
+  }
+
+  const deleteDevice = async (device) => {
+    let devices = await getDevices();
+    let newDevices = devices.filter(d => d.ip !== device.ip);
+    await setDevices(newDevices);
+  }
+
+  const getDevices = async () => {
+    var devices = await AsyncStorage.getItem(DEVICES);
+    return JSON.parse(devices);
+  }
+
+  const setDevices = async (devices) => {
+    updateDevicesConfig(devices);
+    var json = JSON.stringify(devices);
+    await AsyncStorage.setItem(DEVICES, json);
+  }
+
+  const updateDevicesConfig = (devices) => {
+    let newConfig = {
+      ...config,
+      devices: devices
+    };
+    setConfig(newConfig);
   }
 
   return (

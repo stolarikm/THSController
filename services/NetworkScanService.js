@@ -3,9 +3,6 @@ import NetmaskModule from 'netmask';
 import ModbusService from './ModbusService';
 
 export default class NetworkScanService {
-
-  //the common IP address sufix of particular devices, to speed up the search
-  static commonSuffix = 68;
   static shouldStop = true;
 
   static getIp() {
@@ -24,11 +21,11 @@ export default class NetworkScanService {
     });
   }
 
-  static ipComparator(ip1, ip2) {
+  static ipComparator(ip1, ip2, commonIpSuffix) {
     var suffix1 = parseInt(ip1.split('.')[3]);
     var suffix2 = parseInt(ip2.split('.')[3]);
-    var offset1 = suffix1 - NetworkScanService.commonSuffix;
-    var offset2 = suffix2 - NetworkScanService.commonSuffix;
+    var offset1 = suffix1 - commonIpSuffix;
+    var offset2 = suffix2 - commonIpSuffix;
     if (offset1 < 0) {
       offset1 = offset1 + 255;
     }
@@ -38,27 +35,27 @@ export default class NetworkScanService {
     return offset1 - offset2;
   }
 
-  static async getAvailableIps() {
+  static async getAvailableIps(commonIpSuffix) {
     var ip = await NetworkScanService.getIp();
     var subnet = await NetworkScanService.getSubnet();
     var netmask = new NetmaskModule.Netmask(ip + "/" + subnet);
     var availableIps = [];
     netmask.forEach((availableIp) => availableIps.push(availableIp));
-    availableIps.sort(NetworkScanService.ipComparator);
+    availableIps.sort((ip1, ip2) => NetworkScanService.ipComparator(ip1, ip2, commonIpSuffix));
     return availableIps;
   }
 
-  static async autoScan(processDeviceCallback) {
+  static async autoScan(processDeviceCallback, port, commonIpSuffix) {
     NetworkScanService.shouldStop = false;
     var index = 1;
-    for (ip of await NetworkScanService.getAvailableIps()) {
+    for (ip of await NetworkScanService.getAvailableIps(commonIpSuffix)) {
       if (NetworkScanService.shouldStop) {
         return;
       }
-      if (await ModbusService.isDevicePresent(ip)) {
+      if (await ModbusService.isDevicePresent(ip, port)) {
         var newDevice = { name: "Device #" + index, ip: ip };
         index++;   
-        processDeviceCallback(newDevice);
+        await processDeviceCallback(newDevice);
       }
     }
   }

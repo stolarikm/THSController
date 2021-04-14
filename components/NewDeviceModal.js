@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Text } from 'react-native';
-import {StyleSheet} from 'react-native';
+import { Text, StyleSheet, View } from 'react-native';
 import Modal from 'react-native-modal';
 import { Button, Card, TextInput, Title } from 'react-native-paper';
 
@@ -71,15 +70,11 @@ const NewDeviceModal = ({ updatedDevice, visible, close, confirm, validate }) =>
             } }
             style={{marginBottom: 10, width: 280}}
           />
-          
-            <Text style={{color: 'red'}}>{error}</Text>
-          
-          <Button
-            style={{marginTop: 10}}
-            onPress={() => processConfirmation()}
-          >
-            Confirm
-          </Button>
+          <Text style={{color: 'red'}}>{error}</Text>
+          <View style={{flex: 1, width: '100%', flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'flex-end'}}>
+            <Button onPress={processClose}>Cancel</Button>
+            <Button onPress={processConfirmation}>OK</Button>
+          </View>
         </Card.Content>
       </Card>
     </Modal>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Dimensions, processColor, StatusBar } from 'react-native';
+import { StyleSheet, View, processColor, StatusBar } from 'react-native';
 import { Card, Title, Paragraph, Button, Switch } from 'react-native-paper';
 import { LineChart } from 'react-native-charts-wrapper';
 import { useOrientation } from '../hooks/useOrientation';
@@ -94,7 +94,7 @@ export default function MonitorScreen({navigation}) {
           <Button 
             icon="file" 
             disabled={readings.devices.length === 0}
-            onPress={() => FileExportService.exportToExcel(readings.devices)} 
+            onPress={() => FileExportService.exportToExcel(readings.devices, config.exportDirectory)} 
             style={{alignSelf: 'flex-start', display: !isPortrait ? 'none' : 'flex' }}>
             Export
           </Button>
