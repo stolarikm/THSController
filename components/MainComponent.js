@@ -21,6 +21,7 @@ const MainCompoment = () => {
   const isPortrait = useOrientation();
 
   const DEVICES = "DEVICES";
+  const MODE = "MODE";
   const GATEWAY_INTERVAL = "GATEWAY_INTERVAL";
   const IP_SUFFIX = "IP_SUFFIX";
   const NETWORK_PORT = "NETWORK_PORT";
@@ -39,6 +40,10 @@ const MainCompoment = () => {
     let devices = await getObject(DEVICES);
     if (devices) {
       newConfig.devices = devices;
+    }
+    let mode = await get(MODE);
+    if (mode) {
+      newConfig.mode = mode;
     }
     let gatewayInterval = await get(GATEWAY_INTERVAL);
     if (gatewayInterval) {

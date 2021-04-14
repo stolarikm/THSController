@@ -10,6 +10,7 @@ import ModbusService from '../services/ModbusService';
 import NetworkScanService from '../services/NetworkScanService';
 import { ActivityIndicator } from 'react-native';
 import FirebaseService from '../services/FirebaseService';
+import Toast from 'react-native-simple-toast';
 
 
 export default function GatewayScreen({navigation}) {
@@ -25,6 +26,7 @@ export default function GatewayScreen({navigation}) {
   const [isScanning, setScanning] = useState(false);
 
   const DEVICES = 'DEVICES';
+  const MODE = "MODE";
 
   useEffect(() => { //TODO refactor
     const unsubscribe = navigation.addListener('focus', () => {
@@ -81,13 +83,28 @@ export default function GatewayScreen({navigation}) {
     setEditedDevice(null);
   }
 
-  const onStart = () => {
+  const onStart = async () => {
+    if (!await FirebaseService.isGatewayLockAvailable()) {
+      fallbackToClientMode();
+      Toast.show('Can not start gateway service, another gateway device already present. Falling back to client mode', Toast.LONG);
+      return;
+    }
     let timeout = parseInt(config.gatewayInterval);
     if (config.devices.length > 0) {
       PeriodicalPollingService.start(() => pollSensorsSequentially(config.devices), timeout * 1000);
       setRunning(true);
     }
   };
+
+  const fallbackToClientMode = () => {
+    let newConfig = {
+      ...config,
+      mode: 'client'
+    };
+    setConfig(newConfig);
+    AsyncStorage.setItem(MODE, 'client');
+    navigation.replace('BottomDrawerNavigator', { screen: 'Monitor' });
+  }
 
   const onStop = () => {
     PeriodicalPollingService.stop();

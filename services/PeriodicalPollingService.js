@@ -1,4 +1,5 @@
 import BackgroundService from 'react-native-background-actions';
+import FirebaseService from './FirebaseService';
 
 export default class PeriodicalPollingService {
 
@@ -21,6 +22,12 @@ export default class PeriodicalPollingService {
     };
 
     static start = async (func, interval) => {
+        try{
+            await FirebaseService.setGatewayLock(true);
+        } catch (error) {
+            console.log(error);
+        }
+        
         var opts = {
             taskName: 'THS Controller',
             taskTitle: 'Monitoring sensors',
@@ -42,6 +49,11 @@ export default class PeriodicalPollingService {
     }
 
     static async stop() {
+        try{
+            await FirebaseService.setGatewayLock(false,);
+        } catch (error) {
+            console.log(error);
+        }
         await BackgroundService.stop();
     }
 }

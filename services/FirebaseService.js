@@ -1,12 +1,14 @@
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
+import DeviceInfo from 'react-native-device-info'; 
 
 export default class FirebaseService {
 
     static defaultModel = () => {
         return { 
             devices: [],
-            commands: []
+            commands: [],
+            gatewayLock: undefined
          };
     }
 
@@ -41,6 +43,32 @@ export default class FirebaseService {
             }
         }
         return data;
+    }
+
+    static gatewayLock = (data, lock) => {
+        if (lock) {
+            if (data.gatewayLock) {
+                throw new Error("Can not acquire gateway lock");
+            }
+            data.gatewayLock = DeviceInfo.getUniqueId();
+        } else {
+            if (data.gatewayLock !== DeviceInfo.getUniqueId()) {
+                throw new Error("Can not unlock gateway lock");
+            }
+            data.gatewayLock = undefined;
+        }
+        return data;
+    }
+
+    static setGatewayLock = async (lock) => {
+        var data = (await FirebaseService.getDocument()).data();
+        var newData = FirebaseService.gatewayLock(data, lock, DeviceInfo.getUniqueId());
+        await FirebaseService.setDocument(newData);
+    }
+
+    static isGatewayLockAvailable = async () => {
+        var data = (await FirebaseService.getDocument()).data();
+        return !data.gatewayLock || data.gatewayLock === DeviceInfo.getUniqueId();
     }
 
     static enqueue = (data, newData) => {

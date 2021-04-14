@@ -7156,6 +7156,11 @@ react-native-charts-wrapper@^0.5.7:
     prop-types "^15.5.10"
     react "16.8.3"
 
+react-native-device-info@^8.1.0:
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/react-native-device-info/-/react-native-device-info-8.1.0.tgz#7d0ecf65cb26dbdbcdd555fc7bce2d9750b8b3d9"
+  integrity sha512-szEbRRFQ1NYPOjGWyIMsZGk5W2eU4JTiFLaNVXTbK4u/BS/Z5moVJKcoJgYR6Fxiu6qPAY/ofJySJoSdhSeOnw==
+
 react-native-elements@^3.2.0:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/react-native-elements/-/react-native-elements-3.3.2.tgz#42cc05c90a5c85c8aee95ce363bce0c5a39fe633"

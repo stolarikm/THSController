@@ -16,7 +16,7 @@ const SettingsDialog = ({ visible, hideDialog }) => {
     setIpSuffix(config.ipSuffix);
     setPort(config.networkPort);
     setExportDirectory(config.exportDirectory);
-  }, []);
+  }, [visible]);
 
   const GATEWAY_INTERVAL = "GATEWAY_INTERVAL";
   const IP_SUFFIX = "IP_SUFFIX";
