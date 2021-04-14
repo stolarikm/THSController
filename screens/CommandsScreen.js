@@ -116,7 +116,7 @@ export default function CommandsScreen({navigation}) {
           </View>
         </View>
         <View style={{ margin: 10, flex: 4 }}>
-          <Text style={{fontSize: 20, alignSelf: 'center', marginBottom: 20}}>Target devices:</Text>
+          <Text style={{fontSize: 18, alignSelf: 'center', marginBottom: 20}}>Target devices:</Text>
           <ScrollView contentContainerStyle={{alignItems: 'center'}}>
             <View style={{flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center'}}>
               {readings.devices.map((item, index) => {

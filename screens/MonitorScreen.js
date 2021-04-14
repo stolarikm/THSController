@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, ScrollView, processColor, StatusBar, Text } from 'react-native';
-import { Card, Title, Paragraph, Button, Switch } from 'react-native-paper';
+import { Card, Title, Checkbox, Button, Switch } from 'react-native-paper';
 import { LineChart } from 'react-native-charts-wrapper';
 import { useOrientation } from '../hooks/useOrientation';
 import firestore from '@react-native-firebase/firestore';
@@ -15,13 +15,34 @@ export default function MonitorScreen({navigation}) {
     NavigationBar.setColor('#005cb2');
   }, []);
 
+  const availableColors =  ['cornflowerblue',
+                            'brown',
+                            'darkgoldenrod',
+                            'aquamarine',
+                            'coral',
+                            'chartreuse',
+                            'dimgray',
+                            'floralwhite',
+                            'darkorchid',
+                            'magenta'];
+
   useEffect(() => {
     firestore().settings = {  };
     var unsubscribe = firestore().collection("readings")
       .onSnapshot((snapshot) => {
         if (snapshot) {
           //should be only 1 document
-          snapshot.forEach((doc) => doc.id === user.email && setReadings(doc.data()));
+          snapshot.forEach((doc) => {
+            if (doc.id === user.email) {
+              let data = doc.data();
+              let colorGenerator = generateColors(0);
+              data.devices.forEach(d => {
+                d.color = colorGenerator.next().value;
+                d.selected = true;
+              });
+              setReadings(data);
+            }
+          });
         }
       });
       //cleanup
@@ -46,6 +67,13 @@ export default function MonitorScreen({navigation}) {
     return unsubscribe;
   }, [navigation, config]);
 
+  function* generateColors(i) {
+    while (true) {
+      yield availableColors[i % availableColors.length];
+      i++;
+    }
+  }
+
   const getTemperatureReadingsOfDevice = (ip) => {
     var device = readings.devices.find(device => device.ip === ip);
     if (device && device.readings) {
@@ -58,6 +86,28 @@ export default function MonitorScreen({navigation}) {
     if (device && device.readings) {
       return device.readings.map(reading => reading.humidity);
     }
+  }
+
+  const selectDevice = (ip) => {
+    var newReadings = { ...readings };
+    var device = newReadings.devices.find(device => device.ip === ip);
+    if (device) {
+      device.selected = !device.selected;
+    }
+    setReadings(newReadings);
+  }
+
+  const getDataSets = () => {
+    return readings.devices
+      .filter(device => device.selected)
+      .map(device => {
+        return { config: lineConfig(device.color), label: device.name, values: isHumidity ? getHumidityReadingsOfDevice(device.ip) : getTemperatureReadingsOfDevice(device.ip) };
+      });
+  }
+
+  const shouldShowGraph = () => {
+    return readings.devices
+      .some(device => device.selected);
   }
 
   return (
@@ -77,11 +127,23 @@ export default function MonitorScreen({navigation}) {
                 {readings && readings.devices.map((device, index) => {
                   if (device.readings && device.readings.length > 0) {
                     return (
-                      <Card key={index} style={{margin: 10, width: '40%'}}>
+                      <Card key={index} style={{margin: 10, width: '41%'}} onPress={() => selectDevice(device.ip)}>
                         <Card.Content>
-                          { isHumidity && <Title>{device.readings[device.readings.length - 1].humidity}% RH</Title>}
-                          { !isHumidity && <Title>{device.readings[device.readings.length - 1].temperature} °C</Title>}
-                          <Text numberOfLines={1}>{device.name}</Text>
+                          <View style={device.selected ? { borderBottomColor: device.color, borderBottomWidth: 3 } : {}}>
+                            <View style={{flexDirection: 'row'}}>
+                              <View style={{flex: 2, transform: [{ translateX: -10 }]}}>
+                                <Checkbox 
+                                  status={device.selected ? 'checked' : 'unchecked'}
+                                  onPress={() => selectDevice(device.ip)}
+                                />
+                              </View>
+                              <View style={{flex: 7}}>
+                                {  isHumidity && <Title>{device.readings[device.readings.length - 1].humidity}% RH</Title>}
+                                { !isHumidity && <Title>{device.readings[device.readings.length - 1].temperature} °C</Title>}
+                              </View>
+                            </View>
+                            <Text numberOfLines={1} style={{ paddingBottom: 5}}>{device.name}</Text>
+                          </View>
                         </Card.Content>
                       </Card>
                     );
@@ -100,35 +162,42 @@ export default function MonitorScreen({navigation}) {
             style={{alignSelf: 'flex-start', display: !isPortrait ? 'none' : 'flex' }}>
             Export
           </Button>
-          <LineChart
-            marker={{ enabled: true, digits: 1 }}
-            xAxis={{
-              valueFormatter: readings && readings.devices.length > 0 && readings.devices[0].readings ? readings.devices[0].readings.map((reading) => reading.time) : [],  //robit to podla najdlhsieho devicu
-              drawLabels: true,
-              position: "BOTTOM",
-            }}
-            legend={{ enabled: false }}
-            chartDescription={{ text: '' }}
-            style={styles.chart}
-            data={{
-              dataSets: readings.devices.map(device => {
-                return { config: lineConfig, label: device.name, values: isHumidity ? getHumidityReadingsOfDevice(device.ip) : getTemperatureReadingsOfDevice(device.ip) };
-              }),
-            }}
-          />
+          {shouldShowGraph() &&
+            <LineChart
+              marker={{ enabled: true, digits: 1 }}
+              xAxis={{
+                valueFormatter: readings && readings.devices.length > 0 && readings.devices[0].readings ? readings.devices[0].readings.map((reading) => reading.time) : [],  //robit to podla najdlhsieho devicu
+                drawLabels: true,
+                position: "BOTTOM",
+              }}
+              legend={{ enabled: false }}
+              chartDescription={{ text: '' }}
+              style={styles.chart}
+              data={{
+                dataSets: getDataSets()
+              }}
+            />
+          }
+          {!shouldShowGraph() &&
+            <View style={{alignItems: 'center', paddingTop: '20%'}}>
+              <Text>No data to show</Text>
+            </View>
+          }
         </View>
       </View>
       </>
   );
 }
 
-const lineConfig = {
-  lineWidth: 2,
-  drawCircleHole: false,
-  drawCircles: false,
-  circleRadius: 0,
-  drawValues: false,
-  color: processColor('#1976d2'),
+const lineConfig = (color) => {
+  return {
+    lineWidth: 2,
+    drawCircleHole: false,
+    drawCircles: false,
+    circleRadius: 0,
+    drawValues: false,
+    color: processColor(color),
+  }
 }
 
 const styles = StyleSheet.create({
