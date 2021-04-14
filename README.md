@@ -12,11 +12,8 @@ Temperature and humidity sensor controller
 - (delete green drawables + ref), (update SDK version of react-native-navbar-color)
 
 # ToDo list:
-- Config (in drawer, set timeouts, starting IP suffix, ...)
 - Commands list, and domain (JSON, reset command)
 - Responsive cards/chips for more devices
-- Responsive graph (fullscreen when landscape oriented)
-- Check when turning on gateway mode (attribute in Firebase)
 - Checkboxes, colors on monitor screen
 - Different time intervals of readings, maybe filters above graph
 - Tests
