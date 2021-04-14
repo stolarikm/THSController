@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {StatusBar, StyleSheet, View} from 'react-native';
+import {StatusBar, StyleSheet, View, ScrollView, Text} from 'react-native';
 import NavigationBar from 'react-native-navbar-color'
 import { TextInput, FAB } from 'react-native-paper';
 import { Select } from '../components/DropDown';
@@ -115,16 +115,19 @@ export default function CommandsScreen({navigation}) {
             />
           </View>
         </View>
-        <View style={{ margin: 10, flex: 3 }}>
-          <View style={{flexDirection: 'row'}}>
-            {readings.devices.map((item, index) => {
-              return(
-                <Chip key={index} selected={isSelected(item)} onPress={() => select(item)} style={{margin: 5}}>
-                  {item.name}
-                </Chip>
-                );
-            })}
-          </View>
+        <View style={{ margin: 10, flex: 4 }}>
+          <Text style={{fontSize: 20, alignSelf: 'center', marginBottom: 20}}>Target devices:</Text>
+          <ScrollView contentContainerStyle={{alignItems: 'center'}}>
+            <View style={{flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center'}}>
+              {readings.devices.map((item, index) => {
+                return(
+                  <Chip key={index} selected={isSelected(item)} onPress={() => select(item)} style={{margin: 5}} textStyle={{maxWidth: 100}}>
+                    <Text numberOfLines={1}>{item.name}</Text>
+                  </Chip>
+                  );
+              })}
+            </View>
+          </ScrollView>
         </View>
           <FAB
             icon="send"

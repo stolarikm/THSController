@@ -46,6 +46,10 @@ export default class FirebaseService {
     }
 
     static gatewayLock = (data, lock) => {
+        if (!data) {
+            //init
+            data = this.defaultModel();
+        }
         if (lock) {
             if (data.gatewayLock) {
                 throw new Error("Can not acquire gateway lock");
@@ -68,7 +72,7 @@ export default class FirebaseService {
 
     static isGatewayLockAvailable = async () => {
         var data = (await FirebaseService.getDocument()).data();
-        return !data.gatewayLock || data.gatewayLock === DeviceInfo.getUniqueId();
+        return !data || !data.gatewayLock || data.gatewayLock === DeviceInfo.getUniqueId();
     }
 
     static enqueue = (data, newData) => {

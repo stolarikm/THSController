@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, processColor, StatusBar } from 'react-native';
+import { StyleSheet, View, ScrollView, processColor, StatusBar, Text } from 'react-native';
 import { Card, Title, Paragraph, Button, Switch } from 'react-native-paper';
 import { LineChart } from 'react-native-charts-wrapper';
 import { useOrientation } from '../hooks/useOrientation';
@@ -7,7 +7,6 @@ import firestore from '@react-native-firebase/firestore';
 import { useConfig } from '../hooks/useConfig';
 import NavigationBar from 'react-native-navbar-color'
 import FileExportService from '../services/FileExportService';
-import { Text } from 'react-native';
 import auth from '@react-native-firebase/auth';
 
 export default function MonitorScreen({navigation}) {
@@ -65,30 +64,33 @@ export default function MonitorScreen({navigation}) {
     <>
       <View style={styles.container}>
         <View style={!isPortrait ? {display: 'none'} : {}}>
-          <View style={{flex: 1}}>
+          <View style={{flex: 1, alignItems: 'center'}}>
             <View style={{ flexDirection: "row", marginTop: 5 }}>
               <Text style={{ fontWeight: !isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5 }}>Temperature</Text>
               <Switch value={isHumidity} onValueChange={() => setisHumidity(!isHumidity)} trackColor={{true: 'lightgrey', false: 'lightgrey'}} thumbColor='#67daff'/>
               <Text style={{ fontWeight: isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5, paddingRight: 30 }}>Humidity</Text>
             </View>
           </View>
-          <View style={{flex: 9}}>
-            <View style={{ flexDirection: "row", marginTop: 5 }}>
-              {readings && readings.devices.map((device, index) => {
-                if (device.readings && device.readings.length > 0) {
-                  return (
-                    <Card key={index} style={{marginTop: 15, margin: 5}}>
-                      <Card.Content>
-                        { isHumidity && <Title>{device.readings[device.readings.length - 1].humidity}% RH</Title>}
-                        { !isHumidity && <Title>{device.readings[device.readings.length - 1].temperature} °C</Title>}
-                        <Paragraph>{device.name}</Paragraph>
-                      </Card.Content>
-                    </Card>
-                  );
-                }
-              })}
-            </View>
+          <View style={{flex: 9 }}>
+            <ScrollView contentContainerStyle={{alignItems: 'center'}}>
+              <View style={{ flexDirection: "row", flexWrap: 'wrap', justifyContent: 'center'}}>
+                {readings && readings.devices.map((device, index) => {
+                  if (device.readings && device.readings.length > 0) {
+                    return (
+                      <Card key={index} style={{margin: 10, width: '40%'}}>
+                        <Card.Content>
+                          { isHumidity && <Title>{device.readings[device.readings.length - 1].humidity}% RH</Title>}
+                          { !isHumidity && <Title>{device.readings[device.readings.length - 1].temperature} °C</Title>}
+                          <Text numberOfLines={1}>{device.name}</Text>
+                        </Card.Content>
+                      </Card>
+                    );
+                  }
+                })}
+              </View>
+            </ScrollView>
           </View>
+          <View style={{flex: 7}}></View>
         </View>
         <View style={{ marginBottom: 10, position: 'absolute', bottom: 0, height: isPortrait ? 250 : '100%', width: '100%'}}>
           <Button 

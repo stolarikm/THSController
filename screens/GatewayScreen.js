@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {StatusBar, StyleSheet, View} from 'react-native';
+import {StatusBar, StyleSheet, View, ScrollView} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import NavigationBar from 'react-native-navbar-color'
 import { FAB, Card, Title, Paragraph, IconButton } from 'react-native-paper';
@@ -226,29 +226,37 @@ export default function GatewayScreen({navigation}) {
               }}
             />  
         }
-        <View style={{ flex: 1, flexDirection: "row", marginTop: 100 }}>
-          {config.devices.map((element, index) => {
-            return (
-              <Card key={index} style={{margin: 5, height: 100, width: '45%'}}>
-                <Card.Content>
-                  <Title>{element.name}</Title>
-                  <Paragraph>{element.ip}</Paragraph>
-                  <View style={{ position: 'absolute', right: 0}}>
-                    <IconButton
-                      icon="pencil"
-                      color="grey"
-                      onPress={() => {setEditedDevice(element); setModalOpen(true)}}
-                    />
-                    <IconButton
-                      icon="delete"
-                      color="grey"
-                      onPress={() => deleteDevice(element)}
-                    />
-                  </View>
-                </Card.Content>
-              </Card>
-            );
-          })}
+        <View style={{ flex: 4, flexDirection: "row", marginTop: 100 }}>
+          <ScrollView contentContainerStyle={{alignItems: 'center'}}>
+            <View style={{ flexDirection: "row", flexWrap: 'wrap', justifyContent: 'center'}}>
+              {config.devices.map((element, index) => {
+                return (
+                  <Card key={index} style={{ margin: 5, height: 98, width: '45%' }}>
+                    <Card.Content>
+                      <View style={{ flexDirection: 'row' }}>
+                        <View style={{ flex: 9 }}>
+                          <Title numberOfLines={1}>{element.name}</Title>
+                          <Paragraph>{element.ip}</Paragraph>
+                        </View>
+                        <View style={{ flex: 2, alignItems: 'flex-start', justifyContent: 'flex-end', marginTop: 80 }}>
+                          <IconButton
+                            icon="pencil"
+                            color="grey"
+                            onPress={() => {setEditedDevice(element); setModalOpen(true)}}
+                          />
+                          <IconButton
+                            icon="delete"
+                            color="grey"
+                            onPress={() => deleteDevice(element)}
+                          />
+                        </View>
+                      </View>
+                    </Card.Content>
+                  </Card>
+                );
+              })}
+            </View>
+          </ScrollView>
         </View>
         <View style={{flex: 1}}>
         {isScanning && 
