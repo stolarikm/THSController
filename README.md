@@ -18,4 +18,5 @@ Temperature and humidity sensor controller
 - Responsive graph (fullscreen when landscape oriented)
 - Check when turning on gateway mode (attribute in Firebase)
 - Checkboxes, colors on monitor screen
+- Different time intervals of readings, maybe filters above graph
 - Tests
