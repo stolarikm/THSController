@@ -14,4 +14,5 @@ Temperature and humidity sensor controller
 # ToDo list:
 - Commands list, and domain (JSON, reset command)
 - Different time intervals of readings, maybe filters above graph
+- Test on different device
 - Tests
