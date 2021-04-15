@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Button, Dialog, Portal, TextInput } from 'react-native-paper';
 import { useConfig } from '../hooks/useConfig';
 import AsyncStorage from '@react-native-community/async-storage';
+import { defaultConfig } from '../hooks/useConfig';
+import { View } from 'react-native';
 
 const SettingsDialog = ({ visible, hideDialog }) => {
 
@@ -42,6 +44,13 @@ const SettingsDialog = ({ visible, hideDialog }) => {
 
   const discard = () => {
     hideDialog();
+  }
+
+  const reset = () => {
+    setGatewayInterval(defaultConfig.gatewayInterval);
+    setIpSuffix(defaultConfig.ipSuffix);
+    setPort(defaultConfig.networkPort);
+    setExportDirectory(defaultConfig.exportDirectory);
   }
 
   return (
@@ -85,8 +94,11 @@ const SettingsDialog = ({ visible, hideDialog }) => {
             />
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={discard}>Cancel</Button>
-            <Button onPress={ok}>OK</Button>
+            <View style={{flexDirection: 'row'}}>
+              <Button onPress={discard}>Cancel</Button>
+              <Button onPress={reset}>Reset defaults</Button>
+              <Button onPress={ok}>OK</Button>
+            </View> 
           </Dialog.Actions>
         </Dialog>
       </Portal>
