@@ -12,8 +12,6 @@ Temperature and humidity sensor controller
 - (delete green drawables + ref), (update SDK version of react-native-navbar-color)
 
 # ToDo list:
-- Commands list, and domain (JSON, reset command)
 - Different time intervals of readings, maybe filters above graph
-- Set default settings
 - Test on different device
 - Tests
