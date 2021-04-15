@@ -1,0 +1,37 @@
+[
+    {
+        "value": "temp_corr",
+        "label": "Temperature correction",
+        "domain": {
+            "type": "numeric",
+            "values": {
+                "min": -9.9,
+                "max": 9.9
+            }
+        }
+    },
+    {
+        "value": "humidity_corr",
+        "label": "Humidity correction",
+        "domain": {
+            "type": "numeric",
+            "values": {
+                "min": -9.9,
+                "max": 9.9
+            }
+        }
+    },
+    {
+        "value": "temp_unit",
+        "label": "Temperature unit",
+        "domain": {
+            "type": "string",
+            "values": ["C", "F"]
+        }
+    },
+    {
+        "value": "control",
+        "label": "Reinitialize",
+        "domain": null
+    }
+]

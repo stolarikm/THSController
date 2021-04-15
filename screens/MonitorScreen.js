@@ -138,8 +138,8 @@ export default function MonitorScreen({navigation}) {
                                 />
                               </View>
                               <View style={{flex: 7}}>
-                                {  isHumidity && <Title>{device.readings[device.readings.length - 1].humidity}% RH</Title>}
-                                { !isHumidity && <Title>{device.readings[device.readings.length - 1].temperature} °C</Title>}
+                                {  isHumidity && <Title>{device.readings[device.readings.length - 1].humidity}%</Title>}
+                                { !isHumidity && <Title>{device.readings[device.readings.length - 1].temperature} °</Title>}
                               </View>
                             </View>
                             <Text numberOfLines={1} style={{ paddingBottom: 5}}>{device.name}</Text>

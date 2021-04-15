@@ -10,6 +10,7 @@ import LoadingOverlay from '../components/LoadingOverlay';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import FirebaseService from '../services/FirebaseService';
+import commandList from '../resources/commands.json';
 
 export default function CommandsScreen({navigation}) {
   useEffect(() => {
@@ -25,6 +26,7 @@ export default function CommandsScreen({navigation}) {
   const { config, setConfig } = useConfig();
   const [isLoading, setLoading] = useState(false);
   const [readings, setReadings] = useState({ devices: [] });
+  const [error, setError] = useState("");
 
   useEffect(() => { //TODO refactor
     const unsubscribe = navigation.addListener('focus', () => {
@@ -52,8 +54,16 @@ export default function CommandsScreen({navigation}) {
   }, []);
 
   useEffect(() => {
-    setCanSend(command && value && targets.length !== 0);
+    setCanSend(command && targets.length !== 0 && (!command.domain || value));
   }, [command, value, targets]);
+
+  useEffect(() => {
+    setError("");
+  }, [command, value]);
+
+  useEffect(() => {
+    setValue("");
+  }, [command]);
 
   const isSelected = (item) => {
     return targets.some(t => t.ip === item.ip);
@@ -69,22 +79,42 @@ export default function CommandsScreen({navigation}) {
     setTargets(newTargets);
   }
 
+  const validate = () => {
+    if (command.domain) {
+      if (command.domain.type === "numeric") {
+        var val = parseFloat(value);
+        return {
+          ok: !Number.isNaN(val) && val >= command.domain.values.min && val <= command.domain.values.max,
+          error: `Allowed range for values is <${command.domain.values.min}, ${command.domain.values.max}>`
+        }
+      }
+      if (command.domain.type === "string") {
+        return {
+          ok: command.domain.values.includes(value),
+          error: `Allowed values are [${command.domain.values}]`
+        }
+      }
+    }
+    return { ok: true };
+  }
+
   const reset = () => {
     setValue("");
     setTargets([]);
   }
 
-  const commandList = [
-    { label: 'Temperature correction', value: 'temp_corr' },
-  ];
-
   const sendCommand = async () => {
     if (!canSend) {
       return;
     }
+    var validation = validate();
+    if (!validation.ok) {
+      setError(validation.error);
+      return;
+    }
     setLoading(true);
     var commandData = {
-      command: command,
+      command: command.value,
       value: value,
       ips: targets.map(t => t.ip)
     }
@@ -103,17 +133,19 @@ export default function CommandsScreen({navigation}) {
             <View style={{ width: '70%', marginRight: 15 }}>
               <Select
                 label='Command'
-                value={command}
-                setValue={setCommand}
+                value={command.value}
+                setValue={(value) => setCommand(commandList.find(c => c.value === value))}
                 data={commandList}
               />
             </View>
             <TextInput style={{ width: '30%' }}
+              disabled={!command.domain}
               label='Value'
               value={value}
               onChangeText={text => setValue(text)}
             />
           </View>
+          <Text style={{color: 'red', marginTop: 10, alignSelf: 'center'}}>{error}</Text>
         </View>
         <View style={{ margin: 10, flex: 4 }}>
           <Text style={{fontSize: 18, alignSelf: 'center', marginBottom: 20}}>Target devices:</Text>

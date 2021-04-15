@@ -44,7 +44,6 @@ export default function GatewayScreen({navigation}) {
     if (isScanning) {
       let startScan = async () => {
         let port = parseInt(config.networkPort);
-        console.log(port);
         let commonIpSuffix = config.ipSuffix;
         await NetworkScanService.autoScan(saveDevice, port, commonIpSuffix);
         setScanning(false);
