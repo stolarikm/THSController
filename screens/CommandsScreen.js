@@ -116,6 +116,7 @@ export default function CommandsScreen({navigation}) {
     var commandData = {
       command: command.value,
       value: value,
+      register: command.register,
       ips: targets.map(t => t.ip)
     }
     await FirebaseService.queueCommand(commandData);

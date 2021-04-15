@@ -1,8 +1,15 @@
 import ModbusTcp from "react-native-modbus-tcp";
 
 export default class ModbusService {
-    // provider functions
     static connected = false;
+
+    //password for writing into control register
+    //represents binary 10100101 in Most Significant Byte
+    static password = 42240;
+    //represents 0th bit set to 1
+    static reinitBit = 1;
+    //represents 1st bit set to 1
+    static resetBit = 2
 
     static connect(ip, port) {
         return new Promise((resolve, reject) => {
@@ -52,7 +59,6 @@ export default class ModbusService {
         });
     };
 
-    // service functions
     static validateRead(read) {
         return read && 
             read[0] === "[" && 
@@ -70,7 +76,6 @@ export default class ModbusService {
         return read;
     };
 
-    //TODO generalize
     static async readTemperatureAndHumidity(ip, port) {
             await this.connect(ip, port);
             var temp = await this.read(0);   //temperature register
@@ -82,17 +87,45 @@ export default class ModbusService {
             }
     };
 
-    //TODO generalize
-    static async writeTemperatureCorrection(ip, port, correction) {
+    static async sendCommand(ip, port, command) {
         try {
+            var deviceCommand = this.preprocessCommand(command);
             var connectLog = await this.connect(ip, port);
-            var value = await this.write(2000, correction);
-            console.log(value);
+            console.log("[COMMAND]", deviceCommand.register, deviceCommand.value);
+            var response = await this.write(deviceCommand.register, deviceCommand.value);
+            console.log("[RESPONSE]", response)
             var disconnectLog = await this.disconnect();
         } catch (error) {
             console.error("Error sending command: " + error);
         }
     };
+
+    static preprocessCommand(command) {
+        switch(command.command) {
+            case "temp_corr":
+            case "humidity_corr":
+              //to tenths
+              command.value = Math.floor(parseFloat(command.value) * 10);
+              return command;
+            case "temp_units":
+              //to ASCII code
+              command.value = command.value.charCodeAt(0);  
+              return command;
+            case "reinit":
+              //with password protection
+              var passwordProtectedValue = this.password + this.reinitBit;
+              command.value = passwordProtectedValue;
+              return command;
+            case "reset":
+              throw "Disabled intentionally"
+              //with password protection
+              var passwordProtectedValue = this.password + this.resetBit;
+              command.value = passwordProtectedValue;
+              return command;
+            default:
+                return command;
+        } 
+    }
 
     static async isDevicePresent(ip, port) {
         try {

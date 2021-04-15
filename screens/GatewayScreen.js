@@ -115,11 +115,8 @@ export default function GatewayScreen({navigation}) {
     //send commands
     var command = await FirebaseService.popCommand();
     if (command) {
-      if (command.command === "temp_corr") { //TODO typy commandov
-        for (ip of command.ips) {
-          console.log(ip);
-          await ModbusService.writeTemperatureCorrection(ip, port, parseInt(command.value));
-        }
+      for (ip of command.ips) {
+        await ModbusService.sendCommand(ip, port, command);
       }
     }
 

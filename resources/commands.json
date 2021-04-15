@@ -2,6 +2,7 @@
     {
         "value": "temp_corr",
         "label": "Temperature correction",
+        "register": 2000,
         "domain": {
             "type": "numeric",
             "values": {
@@ -13,6 +14,7 @@
     {
         "value": "humidity_corr",
         "label": "Humidity correction",
+        "register": 2200,
         "domain": {
             "type": "numeric",
             "values": {
@@ -22,16 +24,24 @@
         }
     },
     {
-        "value": "temp_unit",
-        "label": "Temperature unit",
+        "value": "temp_units",
+        "label": "Temperature units",
+        "register": 2001,
         "domain": {
             "type": "string",
             "values": ["C", "F"]
         }
     },
     {
-        "value": "control",
+        "value": "reinit",
         "label": "Reinitialize",
+        "register": 1005,
+        "domain": null
+    },
+    {
+        "value": "reset",
+        "label": "Reset defaults",
+        "register": 1005,
         "domain": null
     }
 ]
