@@ -14,5 +14,6 @@ Temperature and humidity sensor controller
 # ToDo list:
 - Different time intervals of readings, maybe filters above graph
 - Remove old data 
+- Device lightbulbs (yellow while reading, green after success, red if error)
 - Test on different device
 - Tests
