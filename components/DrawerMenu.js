@@ -7,6 +7,7 @@ import SwitchModeDialog from './SwitchModeDialog';
 import { useConfig } from '../hooks/useConfig';
 import SettingsDialog from './SettingsDialog';
 import { useOrientation } from '../hooks/useOrientation';
+import ClearDataDialog from './ClearDataDialog';
 
 const DrawerMenu = ({close}) => {
     const user = auth().currentUser;
@@ -15,6 +16,7 @@ const DrawerMenu = ({close}) => {
 
     const [showSwitchModeDialog, setShowSwitchModeDialog] = useState(false);
     const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+    const [showClearDataDialog, setShowClearDataDialog] = useState(false);
 
     useEffect(() => {
         if (!isPortrait) {
@@ -41,16 +43,23 @@ const DrawerMenu = ({close}) => {
         setShowSettingsDialog(true);
     }
 
+    const clearData = () => {
+        close();
+        setShowClearDataDialog(true);
+    }
+
     return (
         <>
             <View>
                 <DrawerHeader title={config.mode === 'client' ? "Client mode" : "Gateway mode"} subtitle={user ? user.email : ""}/>
                 <DrawerItem text={'Switch mode'} icon={'swap-vert'} onPress={switchMode}/>
                 <DrawerItem text={'Settings'} icon={'settings'} onPress={settings}/>
+                <DrawerItem text={'Clear data'} icon={'delete'} onPress={clearData}/>
                 <DrawerItem text={'Logout'} icon={'exit-to-app'} onPress={logout}/>
             </View>
             <SwitchModeDialog visible={showSwitchModeDialog} hideDialog={() => setShowSwitchModeDialog(false)}/>
             <SettingsDialog visible={showSettingsDialog} hideDialog={() => setShowSettingsDialog(false)}/>
+            <ClearDataDialog visible={showClearDataDialog} hideDialog={() => setShowClearDataDialog(false)}/>
         </>
     );
 };

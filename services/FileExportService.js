@@ -18,7 +18,6 @@ export default class FileExportService {
   }
 
   static preprocessData(devices, dateFrom) {
-    console.log("DEV", devices);
     return devices
       .filter(device => device.selected)
       .map((device) => { 

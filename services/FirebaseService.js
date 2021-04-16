@@ -75,6 +75,12 @@ export default class FirebaseService {
         return !data || !data.gatewayLock || data.gatewayLock === DeviceInfo.getUniqueId();
     }
 
+    static clearData = async () => {
+        var data = (await FirebaseService.getDocument()).data();
+        data.devices = [];
+        await FirebaseService.setDocument(data);
+    }
+
     static enqueue = (data, newData) => {
         if (!data.commands) {
             data.commands = [newData];
