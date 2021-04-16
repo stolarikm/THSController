@@ -74,18 +74,28 @@ export default function MonitorScreen({navigation}) {
     }
   }
 
-  const getTemperatureReadingsOfDevice = (ip) => {
+  const getReadingsOfDevice = (ip) => {
     var device = readings.devices.find(device => device.ip === ip);
     if (device && device.readings) {
-      return device.readings.map(reading => reading.temperature);
+      let result = [];
+      var timeLine = generateTimeLine();
+      for (time of timeLine) {
+        var deviceValue = device.readings.find(r => {
+          return time.getTime() === r.time.toDate().getTime();
+        });
+        result.push(deviceValue ? deviceValue : null);
+      }
+      return result;
     }
+    return [];
+  }
+
+  const getTemperatureReadingsOfDevice = (ip) => {
+    return getReadingsOfDevice(ip).map(r => r ? r.temperature : null);
   }
 
   const getHumidityReadingsOfDevice = (ip) => {
-    var device = readings.devices.find(device => device.ip === ip);
-    if (device && device.readings) {
-      return device.readings.map(reading => reading.humidity);
-    }
+    return getReadingsOfDevice(ip).map(r => r ? r.humidity : null);
   }
 
   const selectDevice = (ip) => {
@@ -101,8 +111,62 @@ export default function MonitorScreen({navigation}) {
     return readings.devices
       .filter(device => device.selected)
       .map(device => {
-        return { config: lineConfig(device.color), label: device.name, values: isHumidity ? getHumidityReadingsOfDevice(device.ip) : getTemperatureReadingsOfDevice(device.ip) };
+        return { 
+          config: lineConfig(device.color), 
+          label: device.name,
+          values: isHumidity ? getHumidityReadingsOfDevice(device.ip) : getTemperatureReadingsOfDevice(device.ip) };
       });
+  }
+
+  const getLabels = () => {
+    return {
+      valueFormatter: generateTimeLine().map(parseTime),
+      drawLabels: true,
+      position: "BOTTOM",
+      granularityEnabled: true,
+      granularity: 1,
+      labelCount: isPortrait ? 3 : 8,
+      centerAxisLabels: true
+    }
+  }
+
+  const getBoundaries = () => {
+    let firstTimestamp = new Date(9999, 1, 1);
+    let lastTimestamp = new Date(1, 1, 1);
+    if (readings && readings.devices.length > 0) {
+      for (device of readings.devices) {
+        for (reading of device.readings) {
+          let readingTime = reading.time.toDate();
+          if (readingTime < firstTimestamp) {
+            firstTimestamp = readingTime;
+          }
+          if (readingTime > lastTimestamp) {
+            lastTimestamp = readingTime;
+          }
+        }
+      }
+    }
+    return { firstTimestamp, lastTimestamp };
+  }
+
+
+  const generateTimeLine = () => {
+    let boundaries = getBoundaries();
+    if (!boundaries) {
+      return [];
+    }
+    let result = [];
+    let currentTime = boundaries.firstTimestamp;
+    let endTime = boundaries.lastTimestamp;
+    while (currentTime <= endTime) {
+      result.push(new Date(currentTime));
+      currentTime.setSeconds(currentTime.getSeconds() + 1);
+    }
+    return result;
+  }
+
+  const parseTime = (date) => {
+    return date.getDate() + "." + (date.getMonth() + 1) + ". " + date.toTimeString().split(' ')[0];
   }
 
   const shouldShowGraph = () => {
@@ -165,17 +229,11 @@ export default function MonitorScreen({navigation}) {
           {shouldShowGraph() &&
             <LineChart
               marker={{ enabled: true, digits: 1 }}
-              xAxis={{
-                valueFormatter: readings && readings.devices.length > 0 && readings.devices[0].readings ? readings.devices[0].readings.map((reading) => reading.time) : [],  //robit to podla najdlhsieho devicu
-                drawLabels: true,
-                position: "BOTTOM",
-              }}
               legend={{ enabled: false }}
               chartDescription={{ text: '' }}
               style={styles.chart}
-              data={{
-                dataSets: getDataSets()
-              }}
+              data={{ dataSets: getDataSets() }}
+              xAxis={getLabels()}
             />
           }
           {!shouldShowGraph() &&

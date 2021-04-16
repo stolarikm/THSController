@@ -129,7 +129,7 @@ export default function GatewayScreen({navigation}) {
           name: sensor.name,
           ip: sensor.ip,
           readings: [{
-            time: parseTime(new Date()),
+            time: getRoundTimestamp(),
             temperature: temperature,
             humidity: humidity
           }]
@@ -139,10 +139,12 @@ export default function GatewayScreen({navigation}) {
       FirebaseService.uploadReadings(updateData);
     }
   }
-  
-  const parseTime = (date) => {
-    return date.toTimeString().split(' ')[0];
-  }
+
+  const getRoundTimestamp = () => {
+    var result = new Date();
+    result.setMilliseconds(0);
+    return result;
+  } 
 
   const onAutoScan = () => {
     if (isScanning) {
@@ -236,11 +238,13 @@ export default function GatewayScreen({navigation}) {
                         </View>
                         <View style={{ flex: 2, alignItems: 'flex-start', justifyContent: 'flex-end', marginTop: 80 }}>
                           <IconButton
+                            disabled={isRunning || isScanning}
                             icon="pencil"
                             color="grey"
                             onPress={() => {setEditedDevice(element); setModalOpen(true)}}
                           />
                           <IconButton
+                            disabled={isRunning || isScanning}
                             icon="delete"
                             color="grey"
                             onPress={() => deleteDevice(element)}
