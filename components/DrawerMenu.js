@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DrawerHeader, DrawerItem } from "material-bread";
 import { View } from 'react-native';
 import auth from '@react-native-firebase/auth';
@@ -6,13 +6,21 @@ import * as NavigationService from '../services/NavigationService';
 import SwitchModeDialog from './SwitchModeDialog';
 import { useConfig } from '../hooks/useConfig';
 import SettingsDialog from './SettingsDialog';
+import { useOrientation } from '../hooks/useOrientation';
 
 const DrawerMenu = ({close}) => {
     const user = auth().currentUser;
     const { config } = useConfig();
+    const isPortrait = useOrientation();
 
     const [showSwitchModeDialog, setShowSwitchModeDialog] = useState(false);
     const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+
+    useEffect(() => {
+        if (!isPortrait) {
+            close();
+        }
+    }, [isPortrait]);
 
     const logout = () => {
         auth()

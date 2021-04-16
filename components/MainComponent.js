@@ -33,7 +33,7 @@ const MainCompoment = () => {
 
   useEffect(() => {
     //render
-  }, [isPortrait])
+  }, [isPortrait]);
   
   const init = async () => {
     let newConfig = {};
