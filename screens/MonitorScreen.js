@@ -10,13 +10,7 @@ import FileExportService from '../services/FileExportService';
 import auth from '@react-native-firebase/auth';
 import FilterDialog from '../components/FilterDialog';
 
-export default function MonitorScreen({navigation}) {
-  useEffect(() => {
-    StatusBar.setBackgroundColor('#005cb2');
-    NavigationBar.setColor('#005cb2');
-  }, []);
-
-  const availableColors =  ['cornflowerblue',
+const availableColors =  ['cornflowerblue',
                             'brown',
                             'darkgoldenrod',
                             'aquamarine',
@@ -27,6 +21,21 @@ export default function MonitorScreen({navigation}) {
                             'darkorchid',
                             'magenta'];
 
+function* generateColors(i) {
+  while (true) {
+    yield availableColors[i % availableColors.length];
+    i++;
+  }
+}
+
+const colorGenerator = generateColors(0);
+
+export default function MonitorScreen({navigation}) {
+  useEffect(() => {
+    StatusBar.setBackgroundColor('#005cb2');
+    NavigationBar.setColor('#005cb2');
+  }, []);
+
   useEffect(() => {
     firestore().settings = {  };
     var unsubscribe = firestore().collection("readings")
@@ -36,11 +45,6 @@ export default function MonitorScreen({navigation}) {
           snapshot.forEach((doc) => {
             if (doc.id === user.email) {
               let data = doc.data();
-              let colorGenerator = generateColors(0);
-              data.devices.forEach(d => {
-                d.color = colorGenerator.next().value;
-                d.selected = true;
-              });
               setReadings(data);
             }
           });
@@ -59,6 +63,8 @@ export default function MonitorScreen({navigation}) {
   const isPortrait = useOrientation();
   const [filter, setFilter] = useState('none');
   const [filterModalOpen, setFilterModalOpen] = useState(false);
+  const [selectedDevices, setSelectedDevices] = useState([]);
+  const [deviceColors, setDeviceColors] = useState({});
 
   useEffect(() => { //TODO refactor
     const unsubscribe = navigation.addListener('focus', () => {
@@ -72,20 +78,37 @@ export default function MonitorScreen({navigation}) {
     return unsubscribe;
   }, [navigation, config]);
 
+  useEffect(() => {
+    if (readings && readings.devices && readings.devices.length > 0) {
+      var newColors = {...deviceColors};
+      var newSelectedDevices = [...selectedDevices];
+      var shouldUpdate = false;
+      for (device of readings.devices) {
+        if (!deviceColors[device.ip]) {
+          shouldUpdate = true;
+          //add color to new devices
+          newColors[device.ip] = colorGenerator.next().value;
+          //defaultly select new devices
+          newSelectedDevices.push(device.ip);
+        }
+      }
+      if (shouldUpdate) {
+        setDeviceColors(newColors);
+        setSelectedDevices(newSelectedDevices);
+      }
+    }
+  }, [readings]);
+
   useEffect(() => { 
-    let timeline = generateTimeLine();
-    setGraphTimeline(timeline);
-    setGraphDataSets(getReadingsByDevices(timeline));
+    if (readings && readings.devices && readings.devices.length > 0) {
+      let timeline = generateTimeLine();
+      setGraphTimeline(timeline);
+      setGraphDataSets(getReadingsByDevices(timeline));
+    }
   }, [readings, filter]);
 
-  function* generateColors(i) {
-    while (true) {
-      yield availableColors[i % availableColors.length];
-      i++;
-    }
-  }
-
   const getReadingsByDevices = (timeline) => {
+    
     let map = {};
     for (device of readings.devices) {
       let result = [];
@@ -117,20 +140,29 @@ export default function MonitorScreen({navigation}) {
   }
 
   const selectDevice = (ip) => {
-    var newReadings = { ...readings };
-    var device = newReadings.devices.find(device => device.ip === ip);
-    if (device) {
-      device.selected = !device.selected;
+    var newSelectedDevices = [...selectedDevices];
+    if (newSelectedDevices.includes(ip)) {
+      newSelectedDevices = newSelectedDevices.filter(d => d !== ip);
+    } else {
+      newSelectedDevices.push(ip);
     }
-    setReadings(newReadings);
+    setSelectedDevices(newSelectedDevices);
+  }
+
+  const isDeviceSelected = (ip) => {
+    return selectedDevices.includes(ip);
+  }
+
+  const getDeviceColor = (ip) => {
+    return deviceColors[ip] ? deviceColors[ip] : 'grey';
   }
 
   const getDataSets = () => {
     return readings.devices
-      .filter(device => device.selected)
+      .filter(device => isDeviceSelected(device.ip))
       .map(device => {
         return { 
-          config: lineConfig(device.color), 
+          config: lineConfig(getDeviceColor(device.ip)), 
           label: device.name,
           values: isHumidity ? getHumidityReadingsOfDevice(device.ip) : getTemperatureReadingsOfDevice(device.ip) };
       });
@@ -214,8 +246,7 @@ export default function MonitorScreen({navigation}) {
   }
 
   const shouldShowGraph = () => {
-    return readings.devices
-      .some(device => device.selected);
+    return selectedDevices.length > 0;
   }
 
   return (
@@ -237,11 +268,11 @@ export default function MonitorScreen({navigation}) {
                     return (
                       <Card key={index} style={{margin: 10, width: '41%'}} onPress={() => selectDevice(device.ip)}>
                         <Card.Content>
-                          <View style={device.selected ? { borderBottomColor: device.color, borderBottomWidth: 3 } : {}}>
+                          <View style={isDeviceSelected(device.ip) ? { borderBottomColor: getDeviceColor(device.ip), borderBottomWidth: 3 } : {}}>
                             <View style={{flexDirection: 'row'}}>
                               <View style={{flex: 2, transform: [{ translateX: -10 }]}}>
                                 <Checkbox 
-                                  status={device.selected ? 'checked' : 'unchecked'}
+                                  status={isDeviceSelected(device.ip) ? 'checked' : 'unchecked'}
                                   onPress={() => selectDevice(device.ip)}
                                 />
                               </View>
@@ -266,8 +297,8 @@ export default function MonitorScreen({navigation}) {
           <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
             <Button 
               icon="file" 
-              disabled={readings.devices.length === 0}
-              onPress={() => FileExportService.exportToExcel(readings.devices, config.exportDirectory, getFilterBoundary())} 
+              disabled={selectedDevices.length === 0}
+              onPress={() => FileExportService.exportToExcel(readings.devices, config.exportDirectory, getFilterBoundary(), selectedDevices)} 
               style={{display: !isPortrait ? 'none' : 'flex' }}>
               Export
             </Button>
