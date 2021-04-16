@@ -37,11 +37,5 @@
         "label": "Reinitialize",
         "register": 1005,
         "domain": null
-    },
-    {
-        "value": "reset",
-        "label": "Reset defaults",
-        "register": 1005,
-        "domain": null
     }
 ]

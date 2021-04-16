@@ -8,8 +8,6 @@ export default class ModbusService {
     static password = 42240;
     //represents 0th bit set to 1
     static reinitBit = 1;
-    //represents 1st bit set to 1
-    static resetBit = 2
 
     static connect(ip, port) {
         return new Promise((resolve, reject) => {
@@ -114,12 +112,6 @@ export default class ModbusService {
             case "reinit":
               //with password protection
               var passwordProtectedValue = this.password + this.reinitBit;
-              command.value = passwordProtectedValue;
-              return command;
-            case "reset":
-              throw "Disabled intentionally"
-              //with password protection
-              var passwordProtectedValue = this.password + this.resetBit;
               command.value = passwordProtectedValue;
               return command;
             default:
