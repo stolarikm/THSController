@@ -59,10 +59,10 @@ export default function GatewayScreen({navigation}) {
   }, [isScanning]);
 
   const getDeviceColor = (ip) => {
-    if (currentDevice === ip) {
+    if (isRunning && currentDevice === ip) {
       return 'orange';
     }
-    if (states[ip]) {
+    if (isRunning && states[ip]) {
       if (states[ip].success) {
         return 'green';
       } else {
@@ -75,6 +75,11 @@ export default function GatewayScreen({navigation}) {
   const success = (ip, success) => {
     states[ip] = { success: success };
     setStates(states);
+    setCurrentDevice(null);
+  }
+
+  const resetState = () => {
+    setStates([]);
     setCurrentDevice(null);
   }
 
@@ -105,6 +110,7 @@ export default function GatewayScreen({navigation}) {
   }
 
   const onStart = async () => {
+    resetState();
     if (!await FirebaseService.isGatewayLockAvailable()) {
       fallbackToClientMode();
       Toast.show('Can not start gateway service, another gateway device already present. Falling back to client mode', Toast.LONG);
