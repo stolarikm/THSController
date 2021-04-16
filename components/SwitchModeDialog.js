@@ -49,7 +49,7 @@ const SwitchModeDialog = ({ visible, hideDialog }) => {
               <RadioButton.Item label="Gateway mode" value="gateway" />
             </RadioButton.Group>
           </Dialog.Content>
-          <Dialog.Actions>
+          <Dialog.Actions style={{justifyContent: 'space-between'}}>
             <Button onPress={discard}>Cancel</Button>
             <Button onPress={ok}>OK</Button>
           </Dialog.Actions>

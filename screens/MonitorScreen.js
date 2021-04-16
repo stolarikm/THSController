@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, ScrollView, processColor, StatusBar, Text } from 'react-native';
-import { Card, Title, Checkbox, Button, Switch } from 'react-native-paper';
+import { Card, Title, Checkbox, Button, Switch, IconButton } from 'react-native-paper';
 import { LineChart } from 'react-native-charts-wrapper';
 import { useOrientation } from '../hooks/useOrientation';
 import firestore from '@react-native-firebase/firestore';
@@ -8,7 +8,7 @@ import { useConfig } from '../hooks/useConfig';
 import NavigationBar from 'react-native-navbar-color'
 import FileExportService from '../services/FileExportService';
 import auth from '@react-native-firebase/auth';
-import { Select } from '../components/DropDown';
+import FilterDialog from '../components/FilterDialog';
 
 export default function MonitorScreen({navigation}) {
   useEffect(() => {
@@ -58,6 +58,7 @@ export default function MonitorScreen({navigation}) {
   const { config, setConfig } = useConfig();
   const isPortrait = useOrientation();
   const [filter, setFilter] = useState('none');
+  const [filterModalOpen, setFilterModalOpen] = useState(false);
 
   useEffect(() => { //TODO refactor
     const unsubscribe = navigation.addListener('focus', () => {
@@ -75,7 +76,7 @@ export default function MonitorScreen({navigation}) {
     let timeline = generateTimeLine();
     setGraphTimeline(timeline);
     setGraphDataSets(getReadingsByDevices(timeline));
-  }, [readings]);
+  }, [readings, filter]);
 
   function* generateColors(i) {
     while (true) {
@@ -137,7 +138,7 @@ export default function MonitorScreen({navigation}) {
 
   const getLabels = () => {
     return {
-      valueFormatter: graphTimeline.map(parseTime),
+      valueFormatter: graphTimeline.map(parseLabel),
       drawLabels: true,
       position: "BOTTOM",
       granularityEnabled: true,
@@ -173,7 +174,12 @@ export default function MonitorScreen({navigation}) {
       return [];
     }
     let result = [];
+    let filterBoundary = getFilterBoundary();
     let currentTime = boundaries.firstTimestamp;
+    console.log(currentTime, filterBoundary);
+    if (filterBoundary > currentTime) {
+      currentTime = filterBoundary;
+    }
     let endTime = boundaries.lastTimestamp;
     while (currentTime <= endTime) {
       result.push(new Date(currentTime));
@@ -182,7 +188,29 @@ export default function MonitorScreen({navigation}) {
     return result;
   }
 
-  const parseTime = (date) => {
+  const getFilterBoundary = () => {
+    let result = new Date();
+    result.setMilliseconds(0);
+    switch(filter) {
+      case 'hour':
+        result.setHours(result.getHours() - 1);
+        break;
+      case 'day':
+        result.setDate(result.getDate() - 1);
+        break;
+      case 'week':
+        result.setDate(result.getDate() - 7);
+        break;
+      case 'month':
+        result.setDate(result.getDate() - 30);
+        break;
+      default:
+        return new Date(1, 1, 1);
+    } 
+    return result;
+  }
+
+  const parseLabel = (date) => {
     return date.getDate() + "." + (date.getMonth() + 1) + ". " + date.toTimeString().split(' ')[0];
   }
 
@@ -190,14 +218,6 @@ export default function MonitorScreen({navigation}) {
     return readings.devices
       .some(device => device.selected);
   }
-
-  const filters = [
-    {label: "None", value: "none"},
-    {label: "Last hour", value: "hour"},
-    {label: "Last day", value: "day"},
-    {label: "Last week", value: "week"},
-    {label: "Last month", value: "month"}
-  ];
 
   return (
     <>
@@ -243,23 +263,22 @@ export default function MonitorScreen({navigation}) {
           </View>
           <View style={{flex: 7}}></View>
         </View>
-        <View style={{ marginBottom: 10, position: 'absolute', bottom: 0, height: isPortrait ? 280 : '100%', width: '100%'}}>
-          <View style={{flexDirection: 'row', justifyContent: 'flex-start'}}>
+        <View style={{ marginBottom: 10, position: 'absolute', bottom: 0, height: isPortrait ? 270 : '100%', width: '100%'}}>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
             <Button 
               icon="file" 
               disabled={readings.devices.length === 0}
-              onPress={() => FileExportService.exportToExcel(readings.devices, config.exportDirectory)} 
-              style={{alignSelf: 'flex-start', display: !isPortrait ? 'none' : 'flex' }}>
+              onPress={() => FileExportService.exportToExcel(readings.devices, config.exportDirectory, getFilterBoundary())} 
+              style={{display: !isPortrait ? 'none' : 'flex' }}>
               Export
             </Button>
-            <View style={{width: 125}}>
-            <Select
-              label='Filter'
-              value={filter}
-              setValue={setFilter}
-              data={filters}
+            <IconButton
+              icon='cog'
+              size={18}
+              color='#1976d2'
+              onPress={() => {setFilterModalOpen(true)}}
+              style={{display: !isPortrait ? 'none' : 'flex' }}
             />
-            </View>
           </View>
           {shouldShowGraph() &&
             <LineChart
@@ -277,6 +296,12 @@ export default function MonitorScreen({navigation}) {
             </View>
           }
         </View>
+      <FilterDialog
+        visible={isPortrait && filterModalOpen}
+        currentFilter={filter}
+        close={() => {setFilterModalOpen(false)}}
+        confirm={f => setFilter(f)}
+      />
       </View>
       </>
   );

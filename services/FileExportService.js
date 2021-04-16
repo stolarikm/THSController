@@ -17,21 +17,30 @@ export default class FileExportService {
     return `${YYYY}${MM}${DD}_${hh}${mm}${ss}_${millis}`;
   }
 
-  static preprocessData(devices) {
-    return devices.map((device) => { 
-      return { 
-        deviceName: device.name, 
-        data: device.readings.map((reading) => {
-          return { 
-            Time: reading.time,
-            Temperature: reading.temperature,
-            Humidity: reading.humidity }
-        })
-      }
+  static preprocessData(devices, dateFrom) {
+    console.log("DEV", devices);
+    return devices
+      .filter(device => device.selected)
+      .map((device) => { 
+        return { 
+          deviceName: device.name, 
+          data: device.readings
+            .filter(reading => reading.time.toDate() >= dateFrom)
+            .map((reading) => {
+              return { 
+                Time: this.parseLabel(reading.time.toDate()),
+                Temperature: reading.temperature,
+                Humidity: reading.humidity }
+            })
+        }
     });
   }
 
-  static async exportToExcel(devices, directory) {
+  static parseLabel = (date) => {
+    return date.getDate() + "." + (date.getMonth() + 1) + ". " + date.toTimeString().split(' ')[0];
+  }
+
+  static async exportToExcel(devices, directory, dateFrom) {
     if (Platform.OS === 'android') {
       var granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
       if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
@@ -42,7 +51,7 @@ export default class FileExportService {
       directory += '/';
     }
     
-    var dataArray = FileExportService.preprocessData(devices);
+    var dataArray = FileExportService.preprocessData(devices, dateFrom);
     var wb = XLSX.utils.book_new();
     for (deviceData of dataArray) {
       var ws = XLSX.utils.json_to_sheet(deviceData.data);
