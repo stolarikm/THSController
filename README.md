@@ -13,5 +13,6 @@ Temperature and humidity sensor controller
 
 # ToDo list:
 - Different time intervals of readings, maybe filters above graph
+- Remove old data 
 - Test on different device
 - Tests
