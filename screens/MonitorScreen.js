@@ -8,6 +8,7 @@ import { useConfig } from '../hooks/useConfig';
 import NavigationBar from 'react-native-navbar-color'
 import FileExportService from '../services/FileExportService';
 import auth from '@react-native-firebase/auth';
+import { Select } from '../components/DropDown';
 
 export default function MonitorScreen({navigation}) {
   useEffect(() => {
@@ -51,9 +52,12 @@ export default function MonitorScreen({navigation}) {
 
   const user = auth().currentUser;
   const [readings, setReadings] = useState({ devices: [] });
+  const [graphTimeline, setGraphTimeline] = useState([]);
+  const [graphDataSets, setGraphDataSets] = useState([]);
   const [isHumidity, setisHumidity] = useState(false);
   const { config, setConfig } = useConfig();
   const isPortrait = useOrientation();
+  const [filter, setFilter] = useState('none');
 
   useEffect(() => { //TODO refactor
     const unsubscribe = navigation.addListener('focus', () => {
@@ -67,6 +71,12 @@ export default function MonitorScreen({navigation}) {
     return unsubscribe;
   }, [navigation, config]);
 
+  useEffect(() => { 
+    let timeline = generateTimeLine();
+    setGraphTimeline(timeline);
+    setGraphDataSets(getReadingsByDevices(timeline));
+  }, [readings]);
+
   function* generateColors(i) {
     while (true) {
       yield availableColors[i % availableColors.length];
@@ -74,28 +84,35 @@ export default function MonitorScreen({navigation}) {
     }
   }
 
-  const getReadingsOfDevice = (ip) => {
-    var device = readings.devices.find(device => device.ip === ip);
-    if (device && device.readings) {
+  const getReadingsByDevices = (timeline) => {
+    let map = {};
+    for (device of readings.devices) {
       let result = [];
-      var timeLine = generateTimeLine();
-      for (time of timeLine) {
+      for (time of timeline) {
         var deviceValue = device.readings.find(r => {
           return time.getTime() === r.time.toDate().getTime();
         });
         result.push(deviceValue ? deviceValue : null);
       }
-      return result;
+      map[device.ip] = result;
     }
-    return [];
+    return map;
   }
 
   const getTemperatureReadingsOfDevice = (ip) => {
-    return getReadingsOfDevice(ip).map(r => r ? r.temperature : null);
+    var deviceData = graphDataSets[ip];
+    if (!deviceData) {
+      return [];
+    }
+    return deviceData.map(r => r ? r.temperature : null);
   }
 
   const getHumidityReadingsOfDevice = (ip) => {
-    return getReadingsOfDevice(ip).map(r => r ? r.humidity : null);
+    var deviceData = graphDataSets[ip];
+    if (!deviceData) {
+      return [];
+    }
+    return deviceData.map(r => r ? r.humidity : null);
   }
 
   const selectDevice = (ip) => {
@@ -120,7 +137,7 @@ export default function MonitorScreen({navigation}) {
 
   const getLabels = () => {
     return {
-      valueFormatter: generateTimeLine().map(parseTime),
+      valueFormatter: graphTimeline.map(parseTime),
       drawLabels: true,
       position: "BOTTOM",
       granularityEnabled: true,
@@ -174,6 +191,14 @@ export default function MonitorScreen({navigation}) {
       .some(device => device.selected);
   }
 
+  const filters = [
+    {label: "None", value: "none"},
+    {label: "Last hour", value: "hour"},
+    {label: "Last day", value: "day"},
+    {label: "Last week", value: "week"},
+    {label: "Last month", value: "month"}
+  ];
+
   return (
     <>
       <View style={styles.container}>
@@ -218,14 +243,24 @@ export default function MonitorScreen({navigation}) {
           </View>
           <View style={{flex: 7}}></View>
         </View>
-        <View style={{ marginBottom: 10, position: 'absolute', bottom: 0, height: isPortrait ? 250 : '100%', width: '100%'}}>
-          <Button 
-            icon="file" 
-            disabled={readings.devices.length === 0}
-            onPress={() => FileExportService.exportToExcel(readings.devices, config.exportDirectory)} 
-            style={{alignSelf: 'flex-start', display: !isPortrait ? 'none' : 'flex' }}>
-            Export
-          </Button>
+        <View style={{ marginBottom: 10, position: 'absolute', bottom: 0, height: isPortrait ? 280 : '100%', width: '100%'}}>
+          <View style={{flexDirection: 'row', justifyContent: 'flex-start'}}>
+            <Button 
+              icon="file" 
+              disabled={readings.devices.length === 0}
+              onPress={() => FileExportService.exportToExcel(readings.devices, config.exportDirectory)} 
+              style={{alignSelf: 'flex-start', display: !isPortrait ? 'none' : 'flex' }}>
+              Export
+            </Button>
+            <View style={{width: 125}}>
+            <Select
+              label='Filter'
+              value={filter}
+              setValue={setFilter}
+              data={filters}
+            />
+            </View>
+          </View>
           {shouldShowGraph() &&
             <LineChart
               marker={{ enabled: true, digits: 1 }}
