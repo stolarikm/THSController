@@ -30,7 +30,7 @@
     "react-native-background-actions": "^2.5.2",
     "react-native-charts-wrapper": "^0.5.7",
     "react-native-device-info": "^8.1.0",
-    "react-native-elements": "^3.2.0",
+    "react-native-elements": "^3.3.2",
     "react-native-fs": "^2.16.6",
     "react-native-gesture-handler": "~1.8.0",
     "react-native-get-subnet-mask": "https://github.com/stolarikm/react-native-get-subnet-mask.git",

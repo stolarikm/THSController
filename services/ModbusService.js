@@ -89,9 +89,7 @@ export default class ModbusService {
         try {
             var deviceCommand = this.preprocessCommand(command);
             var connectLog = await this.connect(ip, port);
-            console.log("[COMMAND]", deviceCommand.register, deviceCommand.value);
             var response = await this.write(deviceCommand.register, deviceCommand.value);
-            console.log("[RESPONSE]", response)
             var disconnectLog = await this.disconnect();
         } catch (error) {
             console.error("Error sending command: " + error);

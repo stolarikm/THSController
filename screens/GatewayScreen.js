@@ -11,6 +11,7 @@ import NetworkScanService from '../services/NetworkScanService';
 import { ActivityIndicator } from 'react-native';
 import FirebaseService from '../services/FirebaseService';
 import Toast from 'react-native-simple-toast';
+import { Icon } from 'react-native-elements'
 
 
 export default function GatewayScreen({navigation}) {
@@ -24,6 +25,9 @@ export default function GatewayScreen({navigation}) {
   const [editedDevice, setEditedDevice] = useState(null);
   const [isRunning, setRunning] = useState(PeriodicalPollingService.isRunning());
   const [isScanning, setScanning] = useState(false);
+
+  const [currentDevice, setCurrentDevice] = useState(null);
+  const [states, setStates] = useState([]);
 
   const DEVICES = 'DEVICES';
   const MODE = "MODE";
@@ -54,7 +58,25 @@ export default function GatewayScreen({navigation}) {
     }
   }, [isScanning]);
 
-  
+  const getDeviceColor = (ip) => {
+    if (currentDevice === ip) {
+      return 'orange';
+    }
+    if (states[ip]) {
+      if (states[ip].success) {
+        return 'green';
+      } else {
+        return 'red';
+      }
+    }
+    return 'grey';
+  }
+
+  const success = (ip, success) => {
+    states[ip] = { success: success };
+    setStates(states);
+    setCurrentDevice(null);
+  }
 
   const validate = (device) => {
     if (!device.name) {
@@ -124,17 +146,23 @@ export default function GatewayScreen({navigation}) {
     if (sensors && sensors.length > 0) {
       var updateData = [];
       for (sensor of sensors) {
-        var { temperature, humidity } = await ModbusService.readTemperatureAndHumidity(sensor.ip, port);
-        var data = { 
-          name: sensor.name,
-          ip: sensor.ip,
-          readings: [{
-            time: getRoundTimestamp(),
-            temperature: temperature,
-            humidity: humidity
-          }]
-        };
-        updateData.push(data);
+        setCurrentDevice(sensor.ip);
+        try {
+          var { temperature, humidity } = await ModbusService.readTemperatureAndHumidity(sensor.ip, port);
+          success(sensor.ip, true);
+          var data = { 
+            name: sensor.name,
+            ip: sensor.ip,
+            readings: [{
+              time: getRoundTimestamp(),
+              temperature: temperature,
+              humidity: humidity
+            }]
+          };
+          updateData.push(data);
+        } catch (error) {
+          success(sensor.ip, false);
+        }
       }
       FirebaseService.uploadReadings(updateData);
     }
@@ -233,7 +261,10 @@ export default function GatewayScreen({navigation}) {
                     <Card.Content>
                       <View style={{ flexDirection: 'row' }}>
                         <View style={{ flex: 9 }}>
-                          <Title numberOfLines={1}>{element.name}</Title>
+                          <View style={{flexDirection: 'row'}}>
+                            <Icon name='fiber-manual-record' size={15} color={getDeviceColor(element.ip)} style={{marginTop: 10, marginRight: 3}}/>
+                            <Title numberOfLines={1}>{element.name}</Title>
+                          </View>
                           <Paragraph>{element.ip}</Paragraph>
                         </View>
                         <View style={{ flex: 2, alignItems: 'flex-start', justifyContent: 'flex-end', marginTop: 80 }}>

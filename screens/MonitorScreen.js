@@ -176,7 +176,6 @@ export default function MonitorScreen({navigation}) {
     let result = [];
     let filterBoundary = getFilterBoundary();
     let currentTime = boundaries.firstTimestamp;
-    console.log(currentTime, filterBoundary);
     if (filterBoundary > currentTime) {
       currentTime = filterBoundary;
     }
