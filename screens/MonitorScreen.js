@@ -175,8 +175,9 @@ export default function MonitorScreen({navigation}) {
       position: "BOTTOM",
       granularityEnabled: true,
       granularity: 1,
-      labelCount: isPortrait ? 3 : 8,
-      centerAxisLabels: true
+      labelCount: isPortrait ? 5 : 8,
+      centerAxisLabels: true,
+      labelRotationAngle: isPortrait ? 12 : 0
     }
   }
 

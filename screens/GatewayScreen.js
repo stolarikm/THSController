@@ -134,6 +134,7 @@ export default function GatewayScreen({navigation}) {
   }
 
   const onStop = () => {
+    resetState();
     PeriodicalPollingService.stop();
     setRunning(false);
   };
