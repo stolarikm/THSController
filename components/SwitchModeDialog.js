@@ -4,6 +4,7 @@ import { useConfig } from '../hooks/useConfig';
 import FirebaseService from '../services/FirebaseService';
 import Toast from 'react-native-simple-toast';
 import AsyncStorage from '@react-native-community/async-storage';
+import PeriodicalPollingService from '../services/PeriodicalPollingService';
 
 const SwitchModeDialog = ({ visible, hideDialog }) => {
 
@@ -19,6 +20,10 @@ const SwitchModeDialog = ({ visible, hideDialog }) => {
   const MODE = "MODE";
 
   const ok = async () => {
+    if (mode === 'client' && PeriodicalPollingService.isRunning()) {
+      Toast.show('Can not switch to client mode while gateway service is running', Toast.LONG);
+      return;
+    }
     if (mode === 'gateway' && !await FirebaseService.isGatewayLockAvailable()) {
       Toast.show('Can not switch to gateway mode, another gateway device already present', Toast.LONG);
       return;

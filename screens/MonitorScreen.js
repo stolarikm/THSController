@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, ScrollView, processColor, StatusBar, Text } from 'react-native';
 import { Card, Title, Checkbox, Button, Switch, IconButton } from 'react-native-paper';
 import { LineChart } from 'react-native-charts-wrapper';
@@ -65,6 +65,7 @@ export default function MonitorScreen({navigation}) {
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [selectedDevices, setSelectedDevices] = useState([]);
   const [deviceColors, setDeviceColors] = useState({});
+  const graph = useRef(null);
 
   useEffect(() => { //TODO refactor
     const unsubscribe = navigation.addListener('focus', () => {
@@ -100,6 +101,9 @@ export default function MonitorScreen({navigation}) {
   }, [readings]);
 
   useEffect(() => { 
+    if (readings.devices === 0) {
+      deselectGraph();
+    }
     if (readings && readings.devices && readings.devices.length > 0) {
       let timeline = generateTimeLine();
       setGraphTimeline(timeline);
@@ -123,6 +127,12 @@ export default function MonitorScreen({navigation}) {
     return map;
   }
 
+  const deselectGraph = () => {
+    if (graph && graph.current) {
+      graph.current.highlights([]);
+    }
+  }
+
   const getTemperatureReadingsOfDevice = (ip) => {
     var deviceData = graphDataSets[ip];
     if (!deviceData) {
@@ -140,6 +150,7 @@ export default function MonitorScreen({navigation}) {
   }
 
   const selectDevice = (ip) => {
+    deselectGraph();
     var newSelectedDevices = [...selectedDevices];
     if (newSelectedDevices.includes(ip)) {
       newSelectedDevices = newSelectedDevices.filter(d => d !== ip);
@@ -175,7 +186,7 @@ export default function MonitorScreen({navigation}) {
       position: "BOTTOM",
       granularityEnabled: true,
       granularity: 1,
-      labelCount: isPortrait ? 5 : 8,
+      labelCount: isPortrait ? 5 : 7,
       centerAxisLabels: true,
       labelRotationAngle: isPortrait ? 12 : 0
     }
@@ -299,7 +310,7 @@ export default function MonitorScreen({navigation}) {
             <Button 
               icon="file" 
               disabled={selectedDevices.length === 0}
-              onPress={() => FileExportService.exportToExcel(readings.devices, config.exportDirectory, getFilterBoundary(), selectedDevices)} 
+              onPress={() => { deselectGraph(); FileExportService.exportToExcel(readings.devices, config.exportDirectory, getFilterBoundary(), selectedDevices)}} 
               style={{display: !isPortrait ? 'none' : 'flex' }}>
               Export
             </Button>
@@ -307,7 +318,7 @@ export default function MonitorScreen({navigation}) {
               icon='cog'
               size={18}
               color='#1976d2'
-              onPress={() => {setFilterModalOpen(true)}}
+              onPress={() => {deselectGraph(); setFilterModalOpen(true)}}
               style={{display: !isPortrait ? 'none' : 'flex' }}
             />
           </View>
@@ -319,6 +330,7 @@ export default function MonitorScreen({navigation}) {
               style={styles.chart}
               data={{ dataSets: getDataSets() }}
               xAxis={getLabels()}
+              ref={graph}
             />
           }
           {!shouldShowGraph() &&
