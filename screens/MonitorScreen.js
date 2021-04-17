@@ -264,7 +264,7 @@ export default function MonitorScreen({navigation}) {
   return (
     <>
       <View style={styles.container}>
-        <View style={!isPortrait ? {display: 'none'} : {}}>
+        <View style={{flex: 6, display: !isPortrait ? 'none' : 'flex'}}>
           <View style={{flex: 1, alignItems: 'center'}}>
             <View style={{ flexDirection: "row", marginTop: 5 }}>
               <Text style={{ fontWeight: !isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5 }}>Temperature</Text>
@@ -272,13 +272,13 @@ export default function MonitorScreen({navigation}) {
               <Text style={{ fontWeight: isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5, paddingRight: 30 }}>Humidity</Text>
             </View>
           </View>
-          <View style={{flex: 9 }}>
+          <View style={{flex: 7, marginTop: 5 }}>
             <ScrollView contentContainerStyle={{alignItems: 'center'}}>
               <View style={{ flexDirection: "row", flexWrap: 'wrap', justifyContent: 'center'}}>
                 {readings && readings.devices.map((device, index) => {
                   if (device.readings && device.readings.length > 0) {
                     return (
-                      <Card key={index} style={{margin: 10, width: '41%'}} onPress={() => selectDevice(device.ip)}>
+                      <Card key={index} style={{marginTop: 5, marginBottom: 5, marginLeft: 10, marginRight: 10, width: '41%'}} onPress={() => selectDevice(device.ip)}>
                         <Card.Content>
                           <View style={isDeviceSelected(device.ip) ? { borderBottomColor: getDeviceColor(device.ip), borderBottomWidth: 3 } : {}}>
                             <View style={{flexDirection: 'row'}}>
@@ -303,10 +303,9 @@ export default function MonitorScreen({navigation}) {
               </View>
             </ScrollView>
           </View>
-          <View style={{flex: 7}}></View>
         </View>
-        <View style={{ marginBottom: 10, position: 'absolute', bottom: 0, height: isPortrait ? 270 : '100%', width: '100%'}}>
-          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+        <View style={{ flex: 5, marginBottom: 10, width: '100%' }}>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between', marginBottom: -10}}>
             <Button 
               icon="file" 
               disabled={selectedDevices.length === 0}
