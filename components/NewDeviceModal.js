@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Text, StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import Modal from 'react-native-modal';
 import { Button, Card, TextInput, Title } from 'react-native-paper';
+import Toast from 'react-native-simple-toast';
 
 const NewDeviceModal = ({ updatedDevice, visible, close, confirm, validate }) => {
-
-  const [error, setError] = useState("");
   const [device, setDevice] = useState(updatedDevice ? updatedDevice : {
     name: "",
     ip: ""
@@ -22,17 +21,16 @@ const NewDeviceModal = ({ updatedDevice, visible, close, confirm, validate }) =>
       name: "",
       ip: ""
     });
-    setError("");
   }
 
   const processConfirmation = () => {
     var validation = validate(device);
-    if (validation.ok) {
-      confirm(device);
-      clear();
-    } else {
-      setError(validation.message);
+    if (!validation.ok) {
+      Toast.show(validation.error);
+      return;
     }
+    confirm(device);
+    clear();
   }
 
   const processClose = () => {
@@ -54,11 +52,11 @@ const NewDeviceModal = ({ updatedDevice, visible, close, confirm, validate }) =>
               var newDevice = { ...device };
               newDevice.name = text;
               setDevice(newDevice);
-              setError("");
             } }
             style={{marginBottom: 10, width: 280}}
           />
           <TextInput
+            keyboardType={'numeric'}
             placeholder='192.168.0.68'
             label='IP address'
             value={device.ip}
@@ -66,16 +64,14 @@ const NewDeviceModal = ({ updatedDevice, visible, close, confirm, validate }) =>
               var newDevice = { ...device };
               newDevice.ip = text;
               setDevice(newDevice);
-              setError("");
             } }
             style={{marginBottom: 10, width: 280}}
           />
-          <Text style={{color: 'red'}}>{error}</Text>
-          <View style={{flex: 1, width: '100%', flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'flex-end'}}>
-            <Button onPress={processClose}>Cancel</Button>
-            <Button onPress={processConfirmation}>OK</Button>
-          </View>
         </Card.Content>
+        <Card.Actions style={{justifyContent: 'space-between'}}>
+          <Button onPress={processClose}>Cancel</Button>
+            <Button onPress={processConfirmation}>OK</Button>
+        </Card.Actions>
       </Card>
     </Modal>
     );

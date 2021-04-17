@@ -83,18 +83,37 @@ export default function GatewayScreen({navigation}) {
     setCurrentDevice(null);
   }
 
+  const validateIp = (ip) => {
+    let parts = ip.split('.');
+    if (parts.length !== 4) {
+      return false;
+    }
+    for (part of parts) {
+      if (!part || isNaN(parseInt(part))) {
+        return false;
+      }
+      if (parseInt(part) < 0 || parseInt(part) > 255) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   const validate = (device) => {
     if (!device.name) {
-      return { ok: false, message: "Please provide a device name"}
+      return { ok: false, error: "Please provide a device name"}
     }
     if (!device.ip) {
-      return { ok: false, message: "Please provide a device address"}
+      return { ok: false, error: "Please provide a device IP address"}
+    }
+    if (!validateIp(device.ip)) {
+      return { ok: false, error: "Please provide a valid IP adress"}
     }
     if (config.devices.some(d => d.name === device.name) && (!editedDevice || device.name !== editedDevice.name)) {
-      return { ok: false, message: "Device with this name already exists"}
+      return { ok: false, error: "Device with this name already exists"}
     }
     if (config.devices.some(d => d.ip === device.ip) && (!editedDevice || device.ip !== editedDevice.ip)) {
-      return { ok: false, message: "Device with this address already exists"}
+      return { ok: false, error: "Device with this address already exists"}
     }
     return { ok: true };
   }

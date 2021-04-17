@@ -4,6 +4,7 @@ import { useConfig } from '../hooks/useConfig';
 import AsyncStorage from '@react-native-community/async-storage';
 import { defaultConfig } from '../hooks/useConfig';
 import { View } from 'react-native';
+import Toast from 'react-native-simple-toast';
 
 const SettingsDialog = ({ visible, hideDialog }) => {
 
@@ -26,6 +27,11 @@ const SettingsDialog = ({ visible, hideDialog }) => {
   const EXPORT_DIRECTORY = "EXPORT_DIRECTORY";
 
   const ok = () => {
+    let validation = validate();
+    if (!validation.ok) {
+      Toast.show(validation.error);
+      return;
+    }
     hideDialog();
     let newConfig = {
       ...config,
@@ -40,6 +46,34 @@ const SettingsDialog = ({ visible, hideDialog }) => {
     AsyncStorage.setItem(IP_SUFFIX, ipSuffix);
     AsyncStorage.setItem(NETWORK_PORT, port);
     AsyncStorage.setItem(EXPORT_DIRECTORY, exportDirectory);
+  }
+
+  const validate = () => {
+    if (!gatewayInterval || isNaN(parseInt(gatewayInterval)) || parseInt(gatewayInterval) < 10 || parseInt(gatewayInterval) > 3600) {
+      return {
+        ok: false,
+        error: "Gateway interval has to be between 10 and 3600 seconds"
+      }
+    }
+    if (!ipSuffix || isNaN(parseInt(ipSuffix)) || parseInt(ipSuffix) < 0 || parseInt(ipSuffix) > 255) {
+      return {
+        ok: false,
+        error: "Ip address suffix has to be between 0 and 255"
+      }
+    }
+    if (!port || isNaN(parseInt(port)) || parseInt(port) < 0 || parseInt(port) > 65353) {
+      return {
+        ok: false,
+        error: "Network port has to be between 0 and 65353"
+      }
+    }
+    if (!exportDirectory) {
+      return {
+        ok: false,
+        error: 'Please set the export directory'
+      }
+    } 
+    return { ok: true };
   }
 
   const discard = () => {
@@ -61,6 +95,7 @@ const SettingsDialog = ({ visible, hideDialog }) => {
           <Dialog.Title>Settings</Dialog.Title>
           <Dialog.Content>
             <TextInput
+              keyboardType={'numeric'}
               label='Gateway service interval'
               value={gatewayInterval}
               onChangeText={text => {
@@ -69,6 +104,7 @@ const SettingsDialog = ({ visible, hideDialog }) => {
               style={{marginBottom: 10, width: 280}}
             />
             <TextInput
+              keyboardType={'numeric'}
               label='Common device IP address suffix'
               value={ipSuffix}
               onChangeText={text => {
@@ -77,6 +113,7 @@ const SettingsDialog = ({ visible, hideDialog }) => {
               style={{marginBottom: 10, width: 280}}
             />
             <TextInput
+              keyboardType={'numeric'}
               label='Device network port'
               value={port}
               onChangeText={text => {

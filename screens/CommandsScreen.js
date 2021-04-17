@@ -26,7 +26,6 @@ export default function CommandsScreen({navigation}) {
   const { config, setConfig } = useConfig();
   const [isLoading, setLoading] = useState(false);
   const [readings, setReadings] = useState({ devices: [] });
-  const [error, setError] = useState("");
 
   useEffect(() => { //TODO refactor
     const unsubscribe = navigation.addListener('focus', () => {
@@ -58,10 +57,6 @@ export default function CommandsScreen({navigation}) {
   }, [command, value, targets]);
 
   useEffect(() => {
-    setError("");
-  }, [command, value]);
-
-  useEffect(() => {
     setValue("");
   }, [command]);
 
@@ -85,13 +80,13 @@ export default function CommandsScreen({navigation}) {
         var val = parseFloat(value);
         return {
           ok: !Number.isNaN(val) && val >= command.domain.values.min && val <= command.domain.values.max,
-          error: `Allowed range for values is <${command.domain.values.min}, ${command.domain.values.max}>`
+          error: `Allowed value range for selected command is <${command.domain.values.min}, ${command.domain.values.max}>`
         }
       }
       if (command.domain.type === "string") {
         return {
           ok: command.domain.values.includes(value),
-          error: `Allowed values are [${command.domain.values}]`
+          error: `Allowed values for selected command are [${command.domain.values}]`
         }
       }
     }
@@ -109,7 +104,7 @@ export default function CommandsScreen({navigation}) {
     }
     var validation = validate();
     if (!validation.ok) {
-      setError(validation.error);
+      Toast.show(validation.error);
       return;
     }
     setLoading(true);
@@ -146,7 +141,6 @@ export default function CommandsScreen({navigation}) {
               onChangeText={text => setValue(text)}
             />
           </View>
-          <Text style={{color: 'red', marginTop: 10, alignSelf: 'center'}}>{error}</Text>
         </View>
         <View style={{ margin: 10, flex: 4 }}>
           <Text style={{fontSize: 18, alignSelf: 'center', marginBottom: 20}}>Target devices:</Text>
