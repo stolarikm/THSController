@@ -97,23 +97,24 @@ export default class ModbusService {
     };
 
     static preprocessCommand(command) {
-        switch(command.command) {
+        var processedCommand = { ...command };
+        switch(processedCommand.command) {
             case "temp_corr":
             case "humidity_corr":
               //to tenths
-              command.value = Math.floor(parseFloat(command.value) * 10);
-              return command;
+              processedCommand.value = Math.floor(parseFloat(processedCommand.value) * 10);
+              return processedCommand;
             case "temp_units":
               //to ASCII code
-              command.value = command.value.charCodeAt(0);  
-              return command;
+              processedCommand.value = processedCommand.value.charCodeAt(0);  
+              return processedCommand;
             case "reinit":
               //with password protection
               var passwordProtectedValue = this.password + this.reinitBit;
-              command.value = passwordProtectedValue;
-              return command;
+              processedCommand.value = passwordProtectedValue;
+              return processedCommand;
             default:
-                return command;
+                return processedCommand;
         } 
     }
 

@@ -16,8 +16,8 @@ const availableColors =  ['cornflowerblue',
                             'aquamarine',
                             'coral',
                             'chartreuse',
-                            'dimgray',
-                            'floralwhite',
+                            'salmon',
+                            'teal',
                             'darkorchid',
                             'magenta'];
 
@@ -80,6 +80,10 @@ export default function MonitorScreen({navigation}) {
   }, [navigation, config]);
 
   useEffect(() => {
+    if (!readings || !readings.devices || readings.devices.length === 0) {
+      setSelectedDevices([]);
+      setDeviceColors([]);
+    }
     if (readings && readings.devices && readings.devices.length > 0) {
       var newColors = {...deviceColors};
       var newSelectedDevices = [...selectedDevices];
@@ -267,9 +271,9 @@ export default function MonitorScreen({navigation}) {
         <View style={{flex: 6, display: !isPortrait ? 'none' : 'flex'}}>
           <View style={{flex: 1, alignItems: 'center'}}>
             <View style={{ flexDirection: "row", marginTop: 5 }}>
-              <Text style={{ fontWeight: !isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5 }}>Temperature</Text>
+              <Text style={{ textAlign: "center", fontWeight: !isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5 }}>Temperature</Text>
               <Switch value={isHumidity} onValueChange={() => setisHumidity(!isHumidity)} trackColor={{true: 'lightgrey', false: 'lightgrey'}} thumbColor='#67daff'/>
-              <Text style={{ fontWeight: isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5, paddingRight: 30 }}>Humidity</Text>
+              <Text style={{ textAlign: "center", fontWeight: isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5, paddingRight: 30 }}>Humidity</Text>
             </View>
           </View>
           <View style={{flex: 7, marginTop: 5 }}>
@@ -315,6 +319,7 @@ export default function MonitorScreen({navigation}) {
             </Button>
             <IconButton
               icon='cog'
+              disabled={selectedDevices.length === 0}
               size={18}
               color='#1976d2'
               onPress={() => {deselectGraph(); setFilterModalOpen(true)}}
