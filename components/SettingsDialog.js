@@ -49,10 +49,10 @@ const SettingsDialog = ({ visible, hideDialog }) => {
   }
 
   const validate = () => {
-    if (!gatewayInterval || isNaN(parseInt(gatewayInterval)) || parseInt(gatewayInterval) < 10 || parseInt(gatewayInterval) > 3600) {
+    if (!gatewayInterval || isNaN(parseInt(gatewayInterval)) || parseInt(gatewayInterval) < 1 || parseInt(gatewayInterval) > 60) {
       return {
         ok: false,
-        error: "Gateway interval has to be between 10 and 3600 seconds"
+        error: "Gateway interval has to be between 1 and 60 seconds"
       }
     }
     if (!ipSuffix || isNaN(parseInt(ipSuffix)) || parseInt(ipSuffix) < 0 || parseInt(ipSuffix) > 255) {

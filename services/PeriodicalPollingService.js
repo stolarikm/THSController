@@ -3,9 +3,9 @@ import FirebaseService from './FirebaseService';
 
 export default class PeriodicalPollingService {
 
-    static timeoutTask = (fn, period) => {
-        return new Promise(function (resolve, reject) {
-            fn();
+    static timeoutTask = async (fn, period) => {
+        return new Promise(async (resolve) => {
+            await fn();
             setTimeout(function () {
               resolve("Done");
             }, period);
