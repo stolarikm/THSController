@@ -1,11 +1,13 @@
 import React from 'react';
 import { Button, Dialog, Portal, Text } from 'react-native-paper';
 import FirebaseService from '../services/FirebaseService';
+import Toast from 'react-native-simple-toast';
 
 const ClearDataDialog = ({ visible, hideDialog }) => {
 
   const ok = async () => {
     await FirebaseService.clearData();
+    Toast.show('Data successfully cleared');
     hideDialog();
   }
 

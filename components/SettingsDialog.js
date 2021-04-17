@@ -32,6 +32,7 @@ const SettingsDialog = ({ visible, hideDialog }) => {
       Toast.show(validation.error);
       return;
     }
+    Toast.show('Settings successfully updated');
     hideDialog();
     let newConfig = {
       ...config,

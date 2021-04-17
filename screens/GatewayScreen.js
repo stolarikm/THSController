@@ -12,6 +12,7 @@ import { ActivityIndicator } from 'react-native';
 import FirebaseService from '../services/FirebaseService';
 import Toast from 'react-native-simple-toast';
 import { Icon } from 'react-native-elements'
+import LoadingOverlay from '../components/LoadingOverlay';
 
 
 export default function GatewayScreen({navigation}) {
@@ -25,12 +26,30 @@ export default function GatewayScreen({navigation}) {
   const [editedDevice, setEditedDevice] = useState(null);
   const [isRunning, setRunning] = useState(PeriodicalPollingService.isRunning());
   const [isScanning, setScanning] = useState(false);
+  const [isLoading, setLoading] = useState(false);
 
   const [currentDevice, setCurrentDevice] = useState(null);
   const [states, setStates] = useState([]);
 
   const DEVICES = 'DEVICES';
-  const MODE = "MODE";
+  const MODE = 'MODE';
+
+  //if the gateway service was running before the start of application
+  //we have to restart it, to be able to sync the state with the service again
+  useEffect(() => {
+    var restart = async() => {
+      if (isRunning) {
+        setLoading(true);
+        let timeout = parseInt(config.gatewayInterval);
+        await PeriodicalPollingService.stop();
+        await PeriodicalPollingService.start(() => pollSensorsSequentially(config.devices), timeout * 1000);
+        setLoading(false);
+      }
+    }
+    if (isRunning) {
+      restart();
+    }
+  }, []);
 
   useEffect(() => { //TODO refactor
     const unsubscribe = navigation.addListener('focus', () => {
@@ -129,17 +148,21 @@ export default function GatewayScreen({navigation}) {
   }
 
   const onStart = async () => {
+    setLoading(true);
     resetState();
     if (!await FirebaseService.isGatewayLockAvailable()) {
       fallbackToClientMode();
+      setLoading(false);
       Toast.show('Can not start gateway service, another gateway device already present. Falling back to client mode', Toast.LONG);
       return;
     }
     let timeout = parseInt(config.gatewayInterval);
     if (config.devices.length > 0) {
-      PeriodicalPollingService.start(() => pollSensorsSequentially(config.devices), timeout * 1000);
+      await PeriodicalPollingService.start(() => pollSensorsSequentially(config.devices), timeout * 1000);
+      Toast.show('Gateway service started');
       setRunning(true);
     }
+    setLoading(false);
   };
 
   const fallbackToClientMode = () => {
@@ -152,10 +175,13 @@ export default function GatewayScreen({navigation}) {
     navigation.replace('BottomDrawerNavigator', { screen: 'Monitor' });
   }
 
-  const onStop = () => {
+  const onStop = async () => {
+    setLoading(true);
     resetState();
-    PeriodicalPollingService.stop();
+    await PeriodicalPollingService.stop();
+    Toast.show('Gateway service stopped');
     setRunning(false);
+    setLoading(false);
   };
 
   const pollSensorsSequentially = async (sensors) => {
@@ -354,6 +380,7 @@ export default function GatewayScreen({navigation}) {
         validate={validate}
         confirm={addDevice}
       />
+      {isLoading && <LoadingOverlay />}
     </>
   );
 }
