@@ -12,5 +12,4 @@ Temperature and humidity sensor controller
 - (delete green drawables + ref), (update SDK version of react-native-navbar-color)
 
 # ToDo list:
-- Test on different device
 - Tests
