@@ -52,10 +52,10 @@ const DrawerMenu = ({close}) => {
         <>
             <View>
                 <DrawerHeader title={config.mode === 'client' ? "Client mode" : "Gateway mode"} subtitle={user ? user.email : ""}/>
-                <DrawerItem text={'Switch mode'} icon={'swap-vert'} onPress={switchMode}/>
-                <DrawerItem text={'Settings'} icon={'settings'} onPress={settings}/>
-                <DrawerItem text={'Clear data'} icon={'delete'} onPress={clearData}/>
-                <DrawerItem text={'Logout'} icon={'exit-to-app'} onPress={logout}/>
+                <DrawerItem text={'Switch mode '} icon={'swap-vert'} onPress={switchMode}/>
+                <DrawerItem text={'Settings '} icon={'settings'} onPress={settings}/>
+                <DrawerItem text={'Clear data '} icon={'delete'} onPress={clearData}/>
+                <DrawerItem text={'Logout '} icon={'exit-to-app'} onPress={logout}/>
             </View>
             <SwitchModeDialog visible={showSwitchModeDialog} hideDialog={() => setShowSwitchModeDialog(false)}/>
             <SettingsDialog visible={showSettingsDialog} hideDialog={() => setShowSettingsDialog(false)}/>

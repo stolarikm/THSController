@@ -271,9 +271,9 @@ export default function MonitorScreen({navigation}) {
         <View style={{flex: 6, display: !isPortrait ? 'none' : 'flex'}}>
           <View style={{flex: 1, alignItems: 'center'}}>
             <View style={{ flexDirection: "row", marginTop: 5 }}>
-              <Text style={{ textAlign: "center", fontWeight: !isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5 }}>Temperature</Text>
+              <Text style={{ textAlign: "center", fontWeight: !isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5 }}>{"Temperature "}</Text>
               <Switch value={isHumidity} onValueChange={() => setisHumidity(!isHumidity)} trackColor={{true: 'lightgrey', false: 'lightgrey'}} thumbColor='#67daff'/>
-              <Text style={{ textAlign: "center", fontWeight: isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5, paddingRight: 30 }}>Humidity</Text>
+              <Text style={{ textAlign: "center", fontWeight: isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5, paddingRight: 30 }}>{"Humidity "}</Text>
             </View>
           </View>
           <View style={{flex: 7, marginTop: 5 }}>
