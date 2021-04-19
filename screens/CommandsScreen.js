@@ -135,6 +135,7 @@ export default function CommandsScreen({navigation}) {
               />
             </View>
             <TextInput style={{ width: '30%' }}
+              keyboardType='numeric'
               disabled={!command.domain}
               label='Value'
               value={value}

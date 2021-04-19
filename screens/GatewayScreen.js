@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import NavigationBar from 'react-native-navbar-color'
 import { FAB, Card, Title, Paragraph, IconButton } from 'react-native-paper';
 import { useConfig } from '../hooks/useConfig';
-import NewDeviceModal from '../components/NewDeviceModal';
+import NewDeviceDialog from '../components/NewDeviceDialog';
 import PeriodicalPollingService from '../services/PeriodicalPollingService';
 import ModbusService from '../services/ModbusService';
 import NetworkScanService from '../services/NetworkScanService';
@@ -257,7 +257,8 @@ export default function GatewayScreen({navigation}) {
 
   const getDevices = async () => {
     var devices = await AsyncStorage.getItem(DEVICES);
-    return JSON.parse(devices);
+    var deviceList = JSON.parse(devices);
+    return deviceList ?? [];
   }
 
   const setDevices = async (devices) => {
@@ -373,7 +374,7 @@ export default function GatewayScreen({navigation}) {
             }}
           />
       </View>
-      <NewDeviceModal
+      <NewDeviceDialog
         updatedDevice={editedDevice}
         visible={modalOpen}
         close={() => {setModalOpen(false); setEditedDevice(null)}}

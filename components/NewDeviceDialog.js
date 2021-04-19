@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet } from 'react-native';
-import Modal from 'react-native-modal';
-import { Button, Card, TextInput, Title } from 'react-native-paper';
+import { Button, Dialog, Portal, TextInput } from 'react-native-paper';
 import Toast from 'react-native-simple-toast';
 
-const NewDeviceModal = ({ updatedDevice, visible, close, confirm, validate }) => {
+const NewDeviceDialog = ({ updatedDevice, visible, close, confirm, validate }) => {
   const [device, setDevice] = useState(updatedDevice ? updatedDevice : {
     name: "",
     ip: ""
@@ -39,11 +37,12 @@ const NewDeviceModal = ({ updatedDevice, visible, close, confirm, validate }) =>
   }
 
   return (
-    <Modal isVisible={visible} onBackdropPress={processClose} onBackButtonPress={processClose}>
-      <Card style={styles.card}>
-        <Card.Content style={styles.content}>
-          {!updatedDevice && <Title style={{marginBottom: 20}}>Set up new device</Title>}
-          {updatedDevice && <Title style={{marginBottom: 20}}>Edit device</Title>}
+      <Portal>
+        <Dialog
+          visible={visible}
+          onDismiss={processClose}>
+          <Dialog.Title>{!!updatedDevice ? "Edit device" : "Set up new device"}</Dialog.Title>
+          <Dialog.Content style={{alignItems: 'center'}}>
           <TextInput
             placeholder='Device name'
             label='Device name'
@@ -67,26 +66,14 @@ const NewDeviceModal = ({ updatedDevice, visible, close, confirm, validate }) =>
             } }
             style={{marginBottom: 10, width: '95%'}}
           />
-        </Card.Content>
-        <Card.Actions style={{justifyContent: 'space-between'}}>
-          <Button onPress={processClose}>Cancel</Button>
+          </Dialog.Content>
+          <Dialog.Actions style={{justifyContent: 'space-between'}}>
+            <Button onPress={processClose}>Cancel</Button>
             <Button onPress={processConfirmation}>OK</Button>
-        </Card.Actions>
-      </Card>
-    </Modal>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     );
   };
-  
-  const styles = StyleSheet.create({
-    card: {
-      width: '100%',
-      height: 300,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    content: {
-      alignItems: 'center'
-    }
-  });
 
-  export default NewDeviceModal;
+  export default NewDeviceDialog;
