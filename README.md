@@ -1,5 +1,6 @@
 # THSController
 Temperature and humidity sensor controller
+Download link: https://bit.ly/3x5pDEh
 
 # Debug run:
 - yarn install
