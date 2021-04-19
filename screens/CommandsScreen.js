@@ -11,6 +11,7 @@ import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import FirebaseService from '../services/FirebaseService';
 import commandList from '../resources/commands.json';
+import NoDataComponent from '../components/NoDataComponent';
 
 export default function CommandsScreen({navigation}) {
   useEffect(() => {
@@ -121,55 +122,62 @@ export default function CommandsScreen({navigation}) {
     Toast.show('Command successfully sent');
   }
 
+  const devicesAvailable = () => {
+    return readings && readings.devices && readings.devices.length > 0;
+  }
+
   return (
     <>
-      <View style={styles.container}>
-        <View style={{ margin: 10, flex: 1 }}>
-          <View style={{ flexDirection: 'row', width: '95%'}}>
-            <View style={{ width: '70%', marginRight: 15 }}>
-              <Select
-                label='Command'
-                value={command.value}
-                setValue={(value) => setCommand(commandList.find(c => c.value === value))}
-                data={commandList}
+      {!devicesAvailable() && <NoDataComponent />}
+      {devicesAvailable() && 
+        <View style={styles.container}>
+          <View style={{ margin: 10, flex: 1 }}>
+            <View style={{ flexDirection: 'row', width: '95%'}}>
+              <View style={{ width: '70%', marginRight: 15 }}>
+                <Select
+                  label='Command'
+                  value={command.value}
+                  setValue={(value) => setCommand(commandList.find(c => c.value === value))}
+                  data={commandList}
+                />
+              </View>
+              <TextInput style={{ width: '30%' }}
+                keyboardType='numeric'
+                disabled={!command.domain}
+                label='Value'
+                value={value}
+                onChangeText={text => setValue(text)}
               />
             </View>
-            <TextInput style={{ width: '30%' }}
-              keyboardType='numeric'
-              disabled={!command.domain}
-              label='Value'
-              value={value}
-              onChangeText={text => setValue(text)}
-            />
           </View>
+          <View style={{ margin: 10, flex: 4 }}>
+            <Text style={{fontSize: 18, alignSelf: 'center', marginBottom: 20}}>Target devices:</Text>
+            <ScrollView contentContainerStyle={{alignItems: 'center'}}>
+              <View style={{flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center'}}>
+                {readings.devices.map((item, index) => {
+                  return(
+                    <Chip key={index} selected={isSelected(item)} onPress={() => select(item)} style={{margin: 5}} textStyle={{maxWidth: 100}}>
+                      <Text numberOfLines={1}>{item.name}</Text>
+                    </Chip>
+                    );
+                })}
+              </View>
+            </ScrollView>
+          </View>
+            <FAB
+              icon="send"
+              label="Send"
+              onPress={() => sendCommand()}
+              disabled={!canSend}
+              style={{
+                position: 'absolute',
+                bottom: 30,
+                marginLeft: 'auto', 
+                marginRight: 'auto'
+              }}
+            />
         </View>
-        <View style={{ margin: 10, flex: 4 }}>
-          <Text style={{fontSize: 18, alignSelf: 'center', marginBottom: 20}}>Target devices:</Text>
-          <ScrollView contentContainerStyle={{alignItems: 'center'}}>
-            <View style={{flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center'}}>
-              {readings.devices.map((item, index) => {
-                return(
-                  <Chip key={index} selected={isSelected(item)} onPress={() => select(item)} style={{margin: 5}} textStyle={{maxWidth: 100}}>
-                    <Text numberOfLines={1}>{item.name}</Text>
-                  </Chip>
-                  );
-              })}
-            </View>
-          </ScrollView>
-        </View>
-          <FAB
-            icon="send"
-            label="Send"
-            onPress={() => sendCommand()}
-            disabled={!canSend}
-            style={{
-              position: 'absolute',
-              bottom: 30,
-              marginLeft: 'auto', 
-              marginRight: 'auto'
-            }}
-          />
-      </View>
+      }
       {isLoading && <LoadingOverlay />}
     </>
   );

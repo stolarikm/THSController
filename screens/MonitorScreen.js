@@ -9,6 +9,7 @@ import NavigationBar from 'react-native-navbar-color'
 import FileExportService from '../services/FileExportService';
 import auth from '@react-native-firebase/auth';
 import FilterDialog from '../components/FilterDialog';
+import NoDataComponent from '../components/NoDataComponent';
 
 const availableColors =  ['cornflowerblue',
                             'brown',
@@ -265,92 +266,99 @@ export default function MonitorScreen({navigation}) {
     return selectedDevices.length > 0;
   }
 
+  const devicesAvailable = () => {
+    return readings && readings.devices && readings.devices.length > 0;
+  }
+
   return (
     <>
-      <View style={styles.container}>
-        <View style={{flex: 6, display: !isPortrait ? 'none' : 'flex'}}>
-          <View style={{flex: 1, alignItems: 'center'}}>
-            <View style={{ flexDirection: "row", marginTop: 5 }}>
-              <Text style={{ textAlign: "center", fontWeight: !isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5 }}>{"Temperature "}</Text>
-              <Switch value={isHumidity} onValueChange={() => setisHumidity(!isHumidity)} trackColor={{true: 'lightgrey', false: 'lightgrey'}} thumbColor='#67daff'/>
-              <Text style={{ textAlign: "center", fontWeight: isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5, paddingRight: 30 }}>{"Humidity "}</Text>
-            </View>
-          </View>
-          <View style={{flex: 7, marginTop: 5 }}>
-            <ScrollView contentContainerStyle={{alignItems: 'center'}}>
-              <View style={{ flexDirection: "row", flexWrap: 'wrap', justifyContent: 'center'}}>
-                {readings && readings.devices.map((device, index) => {
-                  if (device.readings && device.readings.length > 0) {
-                    return (
-                      <Card key={index} style={{marginTop: 5, marginBottom: 5, marginLeft: 10, marginRight: 10, width: '41%'}} onPress={() => selectDevice(device.ip)}>
-                        <Card.Content>
-                          <View style={isDeviceSelected(device.ip) ? { borderBottomColor: getDeviceColor(device.ip), borderBottomWidth: 3 } : {}}>
-                            <View style={{flexDirection: 'row'}}>
-                              <View style={{flex: 2, transform: [{ translateX: -10 }]}}>
-                                <Checkbox 
-                                  status={isDeviceSelected(device.ip) ? 'checked' : 'unchecked'}
-                                  onPress={() => selectDevice(device.ip)}
-                                />
-                              </View>
-                              <View style={{flex: 7}}>
-                                {  isHumidity && <Title>{device.readings[device.readings.length - 1].humidity}%</Title>}
-                                { !isHumidity && <Title>{device.readings[device.readings.length - 1].temperature} °</Title>}
-                              </View>
-                            </View>
-                            <Text numberOfLines={1} style={{ paddingBottom: 5}}>{device.name}</Text>
-                          </View>
-                        </Card.Content>
-                      </Card>
-                    );
-                  }
-                })}
+      {!devicesAvailable() && <NoDataComponent />}
+      {devicesAvailable() && 
+        <View style={styles.container}>
+          <View style={{flex: 6, display: !isPortrait ? 'none' : 'flex'}}>
+            <View style={{flex: 1, alignItems: 'center'}}>
+              <View style={{ flexDirection: "row", marginTop: 5 }}>
+                <Text style={{ textAlign: "center", fontWeight: !isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5 }}>{"Temperature "}</Text>
+                <Switch value={isHumidity} onValueChange={() => setisHumidity(!isHumidity)} trackColor={{true: 'lightgrey', false: 'lightgrey'}} thumbColor='#67daff'/>
+                <Text style={{ textAlign: "center", fontWeight: isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5, paddingRight: 30 }}>{"Humidity "}</Text>
               </View>
-            </ScrollView>
-          </View>
-        </View>
-        <View style={{ flex: 5, marginBottom: 10, width: '100%' }}>
-          <View style={{flexDirection: 'row', justifyContent: 'space-between', marginBottom: -10}}>
-            <Button 
-              icon="file" 
-              disabled={selectedDevices.length === 0}
-              onPress={() => { deselectGraph(); FileExportService.exportToExcel(readings.devices, config.exportDirectory, getFilterBoundary(), selectedDevices)}} 
-              style={{display: !isPortrait ? 'none' : 'flex' }}>
-              Export
-            </Button>
-            <IconButton
-              icon='cog'
-              disabled={selectedDevices.length === 0}
-              size={18}
-              color='#1976d2'
-              onPress={() => {deselectGraph(); setFilterModalOpen(true)}}
-              style={{display: !isPortrait ? 'none' : 'flex' }}
-            />
-          </View>
-          {shouldShowGraph() &&
-            <LineChart
-              marker={{ enabled: true, digits: 1 }}
-              legend={{ enabled: false }}
-              chartDescription={{ text: '' }}
-              style={styles.chart}
-              data={{ dataSets: getDataSets() }}
-              xAxis={getLabels()}
-              ref={graph}
-            />
-          }
-          {!shouldShowGraph() &&
-            <View style={{alignItems: 'center', paddingTop: '20%'}}>
-              <Text>No data to show</Text>
             </View>
-          }
-        </View>
-      <FilterDialog
-        visible={isPortrait && filterModalOpen}
-        currentFilter={filter}
-        close={() => {setFilterModalOpen(false)}}
-        confirm={f => setFilter(f)}
-      />
+            <View style={{flex: 7, marginTop: 5 }}>
+              <ScrollView contentContainerStyle={{alignItems: 'center'}}>
+                <View style={{ flexDirection: "row", flexWrap: 'wrap', justifyContent: 'center'}}>
+                  {readings && readings.devices.map((device, index) => {
+                    if (device.readings && device.readings.length > 0) {
+                      return (
+                        <Card key={index} style={{marginTop: 5, marginBottom: 5, marginLeft: 10, marginRight: 10, width: '41%'}} onPress={() => selectDevice(device.ip)}>
+                          <Card.Content>
+                            <View style={isDeviceSelected(device.ip) ? { borderBottomColor: getDeviceColor(device.ip), borderBottomWidth: 3 } : {}}>
+                              <View style={{flexDirection: 'row'}}>
+                                <View style={{flex: 2, transform: [{ translateX: -10 }]}}>
+                                  <Checkbox 
+                                    status={isDeviceSelected(device.ip) ? 'checked' : 'unchecked'}
+                                    onPress={() => selectDevice(device.ip)}
+                                  />
+                                </View>
+                                <View style={{flex: 7}}>
+                                  {  isHumidity && <Title>{device.readings[device.readings.length - 1].humidity}%</Title>}
+                                  { !isHumidity && <Title>{device.readings[device.readings.length - 1].temperature} °</Title>}
+                                </View>
+                              </View>
+                              <Text numberOfLines={1} style={{ paddingBottom: 5}}>{device.name}</Text>
+                            </View>
+                          </Card.Content>
+                        </Card>
+                      );
+                    }
+                  })}
+                </View>
+              </ScrollView>
+            </View>
+          </View>
+          <View style={{ flex: 5, marginBottom: 10, width: '100%' }}>
+            <View style={{flexDirection: 'row', justifyContent: 'space-between', marginBottom: -10}}>
+              <Button 
+                icon="file" 
+                disabled={selectedDevices.length === 0}
+                onPress={() => { deselectGraph(); FileExportService.exportToExcel(readings.devices, config.exportDirectory, getFilterBoundary(), selectedDevices)}} 
+                style={{display: !isPortrait ? 'none' : 'flex' }}>
+                Export
+              </Button>
+              <IconButton
+                icon='cog'
+                disabled={selectedDevices.length === 0}
+                size={18}
+                color='#1976d2'
+                onPress={() => {deselectGraph(); setFilterModalOpen(true)}}
+                style={{display: !isPortrait ? 'none' : 'flex' }}
+              />
+            </View>
+            {shouldShowGraph() &&
+              <LineChart
+                marker={{ enabled: true, digits: 1 }}
+                legend={{ enabled: false }}
+                chartDescription={{ text: '' }}
+                style={styles.chart}
+                data={{ dataSets: getDataSets() }}
+                xAxis={getLabels()}
+                ref={graph}
+              />
+            }
+            {!shouldShowGraph() &&
+              <View style={{alignItems: 'center', paddingTop: '20%'}}>
+                <Text>No data to show</Text>
+              </View>
+            }
+          </View>
+        <FilterDialog
+          visible={isPortrait && filterModalOpen}
+          currentFilter={filter}
+          close={() => {setFilterModalOpen(false)}}
+          confirm={f => setFilter(f)}
+        />
       </View>
-      </>
+    }
+  </>
   );
 }
 
