@@ -57,8 +57,6 @@ export default function MonitorScreen({navigation}) {
 
   const user = auth().currentUser;
   const [readings, setReadings] = useState({ devices: [] });
-  const [graphTimeline, setGraphTimeline] = useState([]);
-  const [graphDataSets, setGraphDataSets] = useState([]);
   const [isHumidity, setisHumidity] = useState(false);
   const { config, setConfig } = useConfig();
   const isPortrait = useOrientation();
@@ -105,53 +103,10 @@ export default function MonitorScreen({navigation}) {
     }
   }, [readings]);
 
-  useEffect(() => { 
-    if (readings.devices === 0) {
-      deselectGraph();
-    }
-    if (readings && readings.devices && readings.devices.length > 0) {
-      let timeline = generateTimeLine();
-      setGraphTimeline(timeline);
-      setGraphDataSets(getReadingsByDevices(timeline));
-    }
-  }, [readings, filter]);
-
-  const getReadingsByDevices = (timeline) => {
-    
-    let map = {};
-    for (device of readings.devices) {
-      let result = [];
-      for (time of timeline) {
-        var deviceValue = device.readings.find(r => {
-          return time.getTime() === r.time.toDate().getTime();
-        });
-        result.push(deviceValue ? deviceValue : null);
-      }
-      map[device.ip] = result;
-    }
-    return map;
-  }
-
   const deselectGraph = () => {
     if (graph && graph.current) {
       graph.current.highlights([]);
     }
-  }
-
-  const getTemperatureReadingsOfDevice = (ip) => {
-    var deviceData = graphDataSets[ip];
-    if (!deviceData) {
-      return [];
-    }
-    return deviceData.map(r => r ? r.temperature : null);
-  }
-
-  const getHumidityReadingsOfDevice = (ip) => {
-    var deviceData = graphDataSets[ip];
-    if (!deviceData) {
-      return [];
-    }
-    return deviceData.map(r => r ? r.humidity : null);
   }
 
   const selectDevice = (ip) => {
@@ -173,73 +128,75 @@ export default function MonitorScreen({navigation}) {
     return deviceColors[ip] ? deviceColors[ip] : 'grey';
   }
 
+  const getDataSet = (ip) => {
+    var device = readings.devices.find(d => d.ip === ip);
+    if (!device) {
+      return [];
+    }
+    var lowerBound = getFilterBoundary();
+    return device.readings
+      .filter(r => { console.log(lowerBound, r.time.toDate()); return r.time.toDate() >= lowerBound})
+      .map(r => isHumidity ? r.humidity : r.temperature);
+  }
+
+  const isSingleData = () => {
+    return devicesAvailable() && readings.devices[0].readings.length === 1;
+  }
+
+  const isSingleOrDoubleData = () => {
+    return devicesAvailable() && readings.devices[0].readings.length <= 2;
+  }
+
   const getDataSets = () => {
+    if (!devicesAvailable()) {
+      return [];
+    }
     return readings.devices
       .filter(device => isDeviceSelected(device.ip))
       .map(device => {
         return { 
-          config: lineConfig(getDeviceColor(device.ip)), 
+          config: lineConfig(getDeviceColor(device.ip), isSingleData()), 
           label: device.name,
-          values: isHumidity ? getHumidityReadingsOfDevice(device.ip) : getTemperatureReadingsOfDevice(device.ip) };
+          values: getDataSet(device.ip)
+        };
       });
+  }
+
+  const getLabelArray = () => {
+    if (!devicesAvailable()) {
+      return [];
+    }
+    var lowerBound = getFilterBoundary();
+    return readings.devices[0].readings
+      .filter(r => r.time.toDate() >= lowerBound)
+      .map(r => parseLabel(r.time.toDate()));
+  }
+
+  const parseLabel = (date) => {
+    return date.getDate() + "." + (date.getMonth() + 1) + ". " + date.toTimeString().split(' ')[0];
   }
 
   const getLabels = () => {
     return {
-      valueFormatter: graphTimeline.map(parseLabel),
+      valueFormatter: getLabelArray(),
       drawLabels: true,
       position: "BOTTOM",
       granularityEnabled: true,
       granularity: 1,
       labelCount: isPortrait ? 5 : 7,
-      centerAxisLabels: true,
+      centerAxisLabels: !isSingleOrDoubleData(),
+      avoidFirstLastClipping: isSingleOrDoubleData(),
       labelRotationAngle: isPortrait ? 12 : 0
     }
-  }
-
-  const getBoundaries = () => {
-    let firstTimestamp = new Date(9999, 1, 1);
-    let lastTimestamp = new Date(1, 1, 1);
-    if (readings && readings.devices.length > 0) {
-      for (device of readings.devices) {
-        for (reading of device.readings) {
-          let readingTime = reading.time.toDate();
-          if (readingTime < firstTimestamp) {
-            firstTimestamp = readingTime;
-          }
-          if (readingTime > lastTimestamp) {
-            lastTimestamp = readingTime;
-          }
-        }
-      }
-    }
-    return { firstTimestamp, lastTimestamp };
-  }
-
-
-  const generateTimeLine = () => {
-    let boundaries = getBoundaries();
-    if (!boundaries) {
-      return [];
-    }
-    let result = [];
-    let filterBoundary = getFilterBoundary();
-    let currentTime = boundaries.firstTimestamp;
-    if (filterBoundary > currentTime) {
-      currentTime = filterBoundary;
-    }
-    let endTime = boundaries.lastTimestamp;
-    while (currentTime <= endTime) {
-      result.push(new Date(currentTime));
-      currentTime.setSeconds(currentTime.getSeconds() + 1);
-    }
-    return result;
   }
 
   const getFilterBoundary = () => {
     let result = new Date();
     result.setMilliseconds(0);
     switch(filter) {
+      case 'minute':
+        result.setMinutes(result.getMinutes() - 1);
+        break;
       case 'hour':
         result.setHours(result.getHours() - 1);
         break;
@@ -256,10 +213,6 @@ export default function MonitorScreen({navigation}) {
         return new Date(1, 1, 1);
     } 
     return result;
-  }
-
-  const parseLabel = (date) => {
-    return date.getDate() + "." + (date.getMonth() + 1) + ". " + date.toTimeString().split(' ')[0];
   }
 
   const shouldShowGraph = () => {
@@ -362,11 +315,12 @@ export default function MonitorScreen({navigation}) {
   );
 }
 
-const lineConfig = (color) => {
+const lineConfig = (color, singleData) => {
   return {
     lineWidth: 2,
     drawCircleHole: false,
-    drawCircles: false,
+    drawCircles: singleData,
+    circleColor: processColor(color),
     circleRadius: 0,
     drawValues: false,
     color: processColor(color),

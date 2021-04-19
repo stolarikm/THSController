@@ -19,6 +19,7 @@ const FilterDialog = ({ visible, close, currentFilter, confirm }) => {
       <Dialog.Content>
         <RadioButton.Group onValueChange={value => setFilter(value)} value={filter}>
           <RadioButton.Item label="None" value="none" />
+          <RadioButton.Item label="Last minute" value="minute" />
           <RadioButton.Item label="Last hour" value="hour" />
           <RadioButton.Item label="Last day" value="day" />
           <RadioButton.Item label="Last week" value="week" />

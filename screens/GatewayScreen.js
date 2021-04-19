@@ -13,6 +13,8 @@ import FirebaseService from '../services/FirebaseService';
 import Toast from 'react-native-simple-toast';
 import { Icon } from 'react-native-elements'
 import LoadingOverlay from '../components/LoadingOverlay';
+import firestore from '@react-native-firebase/firestore';
+import RestartGatewayDataDialog from '../components/RestartGatewayDataDialog'
 
 
 export default function GatewayScreen({navigation}) {
@@ -23,6 +25,7 @@ export default function GatewayScreen({navigation}) {
 
   const { config, setConfig } = useConfig();
   const [modalOpen, setModalOpen] = useState(false);
+  const [restartModalOpen, setRestartModalOpen] = useState(false);
   const [editedDevice, setEditedDevice] = useState(null);
   const [isRunning, setRunning] = useState(PeriodicalPollingService.isRunning());
   const [isScanning, setScanning] = useState(false);
@@ -147,6 +150,19 @@ export default function GatewayScreen({navigation}) {
     setEditedDevice(null);
   }
 
+  const beforeStart = async () => {
+    if (await FirebaseService.areDataPresent()) {
+      setRestartModalOpen(true);
+    } else {
+      onStart();
+    }
+  }
+
+  const overWriteAndStart = async () => {
+    await FirebaseService.clearData();
+    onStart();
+  }
+
   const onStart = async () => {
     setLoading(true);
     resetState();
@@ -195,6 +211,7 @@ export default function GatewayScreen({navigation}) {
     }
 
     //monitor
+    var readTime = getRoundTimestamp();
     if (sensors && sensors.length > 0) {
       var updateData = [];
       for (sensor of sensors) {
@@ -206,7 +223,7 @@ export default function GatewayScreen({navigation}) {
             name: sensor.name,
             ip: sensor.ip,
             readings: [{
-              time: getRoundTimestamp(),
+              time: firestore.Timestamp.fromDate(readTime),
               temperature: temperature,
               humidity: humidity
             }]
@@ -282,7 +299,7 @@ export default function GatewayScreen({navigation}) {
             <FAB
               icon="play"
               label="Start"
-              onPress={() => onStart()}
+              onPress={() => beforeStart()}
               disabled={config.devices.length === 0 || isScanning}
               style={{
                 position: 'absolute',
@@ -380,6 +397,11 @@ export default function GatewayScreen({navigation}) {
         close={() => {setModalOpen(false); setEditedDevice(null)}}
         validate={validate}
         confirm={addDevice}
+      />
+      <RestartGatewayDataDialog
+        visible={restartModalOpen}
+        hideDialog={() => setRestartModalOpen(false)}
+        callback={overWriteAndStart}
       />
       {isLoading && <LoadingOverlay />}
     </>
