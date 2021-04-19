@@ -8,8 +8,9 @@ Temperature and humidity sensor controller
 # Release build procedure:
 - react-native bundle --dev false --platform android --entry-file index.js --bundle-output ./android/app/src/main/assets/index.android.bundle --assets-dest ./android/app/src/main/res
 - cd android -> gradlew assembleRelease
+- delete unnecessary added files (android/app/drawables, ref)
+- update SDK version of react-native-navbar-color (if needed)
 - cd app/build/outputs/apk/release -> adb install app-release.apk
-- (delete green drawables + ref), (update SDK version of react-native-navbar-color)
 
 # ToDo list:
 - Tests
