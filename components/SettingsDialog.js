@@ -94,7 +94,7 @@ const SettingsDialog = ({ visible, hideDialog }) => {
           visible={visible}
           onDismiss={discard}>
           <Dialog.Title>Settings</Dialog.Title>
-          <Dialog.Content>
+          <Dialog.Content style={{alignItems: 'center'}}>
             <TextInput
               keyboardType={'numeric'}
               label='Gateway service interval'
@@ -102,7 +102,7 @@ const SettingsDialog = ({ visible, hideDialog }) => {
               onChangeText={text => {
                 setGatewayInterval(text);
               } }
-              style={{marginBottom: 10, width: 280}}
+              style={{marginBottom: 10, width: '95%'}}
             />
             <TextInput
               keyboardType={'numeric'}
@@ -111,7 +111,7 @@ const SettingsDialog = ({ visible, hideDialog }) => {
               onChangeText={text => {
                 setIpSuffix(text);
               } }
-              style={{marginBottom: 10, width: 280}}
+              style={{marginBottom: 10, width: '95%'}}
             />
             <TextInput
               keyboardType={'numeric'}
@@ -120,7 +120,7 @@ const SettingsDialog = ({ visible, hideDialog }) => {
               onChangeText={text => {
                 setPort(text);
               } }
-              style={{marginBottom: 10, width: 280}}
+              style={{marginBottom: 10, width: '95%'}}
             />
             <TextInput
               label='Export directory'
@@ -128,7 +128,7 @@ const SettingsDialog = ({ visible, hideDialog }) => {
               onChangeText={text => {
                 setExportDirectory(text);
               } }
-              style={{marginBottom: 10, width: 280}}
+              style={{marginBottom: 10, width: '95%'}}
             />
           </Dialog.Content>
           <Dialog.Actions style={{justifyContent: 'space-between'}}>

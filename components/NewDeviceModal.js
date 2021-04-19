@@ -53,7 +53,7 @@ const NewDeviceModal = ({ updatedDevice, visible, close, confirm, validate }) =>
               newDevice.name = text;
               setDevice(newDevice);
             } }
-            style={{marginBottom: 10, width: 280}}
+            style={{marginBottom: 10, width: '95%'}}
           />
           <TextInput
             keyboardType={'numeric'}
@@ -65,7 +65,7 @@ const NewDeviceModal = ({ updatedDevice, visible, close, confirm, validate }) =>
               newDevice.ip = text;
               setDevice(newDevice);
             } }
-            style={{marginBottom: 10, width: 280}}
+            style={{marginBottom: 10, width: '95%'}}
           />
         </Card.Content>
         <Card.Actions style={{justifyContent: 'space-between'}}>

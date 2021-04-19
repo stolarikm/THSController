@@ -29,6 +29,7 @@ const SwitchModeDialog = ({ visible, hideDialog }) => {
       return;
     }
     hideDialog();
+    Toast.show(`Switched to ${mode} mode`);
     let newConfig = {
       ...config,
       mode: mode
