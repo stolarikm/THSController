@@ -38,7 +38,6 @@ export default function MonitorScreen({navigation}) {
   }, []);
 
   useEffect(() => {
-    firestore().settings = {  };
     var unsubscribe = firestore().collection("readings")
       .onSnapshot((snapshot) => {
         if (snapshot) {
