@@ -300,7 +300,7 @@ export default function GatewayScreen({navigation}) {
               icon="play"
               label="Start"
               onPress={() => beforeStart()}
-              disabled={config.devices.length === 0 || isScanning}
+              disabled={!config || config.devices.length === 0 || isScanning}
               style={{
                 position: 'absolute',
                 top: 30,
@@ -325,7 +325,7 @@ export default function GatewayScreen({navigation}) {
         <View style={{ flex: 4, flexDirection: "row", marginTop: 100 }}>
           <ScrollView contentContainerStyle={{alignItems: 'center'}}>
             <View style={{ flexDirection: "row", flexWrap: 'wrap', justifyContent: 'center'}}>
-              {config.devices.map((element, index) => {
+              {config && config.devices.map((element, index) => {
                 return (
                   <Card key={index} style={{ margin: 5, height: 98, width: '45%' }}>
                     <Card.Content>
