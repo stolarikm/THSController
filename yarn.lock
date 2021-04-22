@@ -7215,10 +7215,9 @@ react-native-modbus-tcp@^1.0.0:
   resolved "https://registry.yarnpkg.com/react-native-modbus-tcp/-/react-native-modbus-tcp-1.0.0.tgz#6f2b15a6627fd27ea08ae8bdb5f83b795e6fd81e"
   integrity sha512-sUIz6iag8y7m3Bf2nwxkFi/aHQLFBiwyOGMb7U95l+NAAheM3Cj6nz8HV94Dvx9VcumPh9lDMKr/NZ5GtEt6Og==
 
-react-native-navbar-color@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/react-native-navbar-color/-/react-native-navbar-color-1.0.3.tgz#b796e728226804d405335df53a64a9ed4091d5a6"
-  integrity sha512-VAouso41MWDFC+mLPJmgIaH/B2352MnEgCrqzwDCKf43+nfk7O5FuqtLN9pWKEvX06laSTQPdqy5Arln/GH0Pg==
+"react-native-navbar-color@https://github.com/stolarikm/react-native-navbar-color.git":
+  version "1.0.2"
+  resolved "https://github.com/stolarikm/react-native-navbar-color.git#468eabeb6dbfdcafdd03cc7697a491940b5d102e"
 
 react-native-paper@^4.7.2:
   version "4.7.2"

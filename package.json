@@ -36,7 +36,7 @@
     "react-native-get-subnet-mask": "https://github.com/stolarikm/react-native-get-subnet-mask.git",
     "react-native-modal": "^11.7.0",
     "react-native-modbus-tcp": "^1.0.0",
-    "react-native-navbar-color": "^1.0.3",
+    "react-native-navbar-color": "https://github.com/stolarikm/react-native-navbar-color.git",
     "react-native-paper": "^4.7.2",
     "react-native-reanimated": "~1.13.0",
     "react-native-safe-area": "^0.5.1",
