@@ -18,6 +18,7 @@ export default class PeriodicalPollingService {
             while(BackgroundService.isRunning()) {
                 await this.timeoutTask(fn, period);
             }
+            resolve("Done");
         });
     };
 
@@ -50,7 +51,7 @@ export default class PeriodicalPollingService {
 
     static async stop() {
         try{
-            await FirebaseService.setGatewayLock(false,);
+            await FirebaseService.setGatewayLock(false);
         } catch (error) {
             console.log(error);
         }
