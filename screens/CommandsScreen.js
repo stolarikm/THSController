@@ -133,7 +133,7 @@ export default function CommandsScreen({navigation}) {
         <View style={styles.container}>
           <View style={{ margin: 10, flex: 1 }}>
             <View style={{ flexDirection: 'row', width: '95%'}}>
-              <View style={{ width: '70%', marginRight: 15 }}>
+              <View style={command.domain ? { width: '70%', marginRight: 15 } : { width: '100%'}}>
                 <Select
                   label='Command'
                   value={command.value}
@@ -141,13 +141,24 @@ export default function CommandsScreen({navigation}) {
                   data={commandList}
                 />
               </View>
-              <TextInput style={{ width: '30%' }}
-                keyboardType='numeric'
-                disabled={!command.domain}
-                label='Value'
-                value={value}
-                onChangeText={text => setValue(text)}
-              />
+              {command.domain && command.domain.type === 'numeric' && 
+                <TextInput style={{ width: '30%' }}
+                  keyboardType='numeric'
+                  label='Value'
+                  value={value}
+                  onChangeText={text => setValue(text)}
+                />
+              }
+              {command.domain && command.domain.type === 'string' && 
+                <View style={{ width: '30%' }}>
+                  <Select
+                    label='Value'
+                    value={value}
+                    setValue={text => setValue(text)}
+                    data={command.domain.values.map(val => { return { value: val, label: val }})}
+                  />
+                </View>
+              }
             </View>
           </View>
           <View style={{ margin: 10, flex: 4 }}>

@@ -8,7 +8,7 @@ export const defaultConfig = {
         screenName: "",
         mode: "client",
         devices: [],
-        gatewayInterval: "30",
+        gatewayInterval: "10",
         ipSuffix: "68",
         networkPort: "502",
         exportDirectory: RNFS.ExternalStorageDirectoryPath + '/THSControllerExport/'

@@ -335,7 +335,7 @@ export default function GatewayScreen({navigation}) {
                             <Icon name='fiber-manual-record' size={15} color={getDeviceColor(element.ip)} style={{marginTop: 10, marginRight: 3}}/>
                             <Title numberOfLines={1}>{element.name}</Title>
                           </View>
-                          <Paragraph>{element.ip}</Paragraph>
+                          <Paragraph numberOfLines={1}>{element.ip}</Paragraph>
                         </View>
                         <View style={{ flex: 2, alignItems: 'flex-start', justifyContent: 'flex-end', marginTop: 80 }}>
                           <IconButton
