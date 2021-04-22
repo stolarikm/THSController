@@ -21,7 +21,7 @@ export default class ModbusService {
                     }
                 });
             } else {
-                reject();
+                reject("Connected already");
             }
         });
     };
@@ -33,6 +33,8 @@ export default class ModbusService {
                     this.connected = false;
                     resolve(res);
                 });
+            } else {
+                resolve();
             }
         });
     };
@@ -43,6 +45,8 @@ export default class ModbusService {
                 ModbusTcp.readHoldingRegisters(1, address, 1, (res) => {
                     resolve(res);
                 });
+            } else {
+                reject("Not connected");
             }
         });
     };
@@ -53,6 +57,8 @@ export default class ModbusService {
                 ModbusTcp.writeRegister(1, address, value, (res) => {
                     resolve(res);
                 });
+            } else {
+                reject("Not connected");
             }
         });
     };
@@ -68,10 +74,6 @@ export default class ModbusService {
         var str = read.toString().substring(1, read.length - 1);
         var value = parseInt(str);
         return value / 10;
-    };
-
-    static parseHumidity = (read) => {
-        return read;
     };
 
     static async readTemperatureAndHumidity(ip, port) {

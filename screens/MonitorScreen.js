@@ -134,7 +134,7 @@ export default function MonitorScreen({navigation}) {
     }
     var lowerBound = getFilterBoundary();
     return device.readings
-      .filter(r => { console.log(lowerBound, r.time.toDate()); return r.time.toDate() >= lowerBound})
+      .filter(r => { return r.time.toDate() >= lowerBound})
       .map(r => isHumidity ? r.humidity : r.temperature);
   }
 
