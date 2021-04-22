@@ -60,7 +60,7 @@ export default class NetworkScanService {
     }
   }
 
-  static async stop() {
+  static stop() {
     NetworkScanService.shouldStop = true;
   }
 }
