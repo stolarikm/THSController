@@ -3,7 +3,7 @@ import { Button, Dialog, Portal, TextInput } from 'react-native-paper';
 import { useConfig } from '../hooks/useConfig';
 import AsyncStorage from '@react-native-community/async-storage';
 import { defaultConfig } from '../hooks/useConfig';
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import Toast from 'react-native-simple-toast';
 
 const SettingsDialog = ({ visible, hideDialog }) => {
@@ -94,43 +94,45 @@ const SettingsDialog = ({ visible, hideDialog }) => {
           visible={visible}
           onDismiss={discard}>
           <Dialog.Title>Settings</Dialog.Title>
-          <Dialog.Content style={{alignItems: 'center'}}>
-            <TextInput
-              keyboardType={'numeric'}
-              label='Gateway service interval'
-              value={gatewayInterval}
-              onChangeText={text => {
-                setGatewayInterval(text);
-              } }
-              style={{marginBottom: 10, width: '95%'}}
-            />
-            <TextInput
-              keyboardType={'numeric'}
-              label='Common device IP address suffix'
-              value={ipSuffix}
-              onChangeText={text => {
-                setIpSuffix(text);
-              } }
-              style={{marginBottom: 10, width: '95%'}}
-            />
-            <TextInput
-              keyboardType={'numeric'}
-              label='Device network port'
-              value={port}
-              onChangeText={text => {
-                setPort(text);
-              } }
-              style={{marginBottom: 10, width: '95%'}}
-            />
-            <TextInput
-              label='Export directory'
-              value={exportDirectory}
-              onChangeText={text => {
-                setExportDirectory(text);
-              } }
-              style={{marginBottom: 10, width: '95%'}}
-            />
-          </Dialog.Content>
+          <Dialog.ScrollArea style={{alignItems: 'center'}}>
+            <ScrollView contentContainerStyle={{alignItems: 'center'}}>
+              <TextInput
+                keyboardType={'numeric'}
+                label='Gateway service interval'
+                value={gatewayInterval}
+                onChangeText={text => {
+                  setGatewayInterval(text);
+                } }
+                style={{marginBottom: 10, width: '95%'}}
+              />
+              <TextInput
+                keyboardType={'numeric'}
+                label='Common device IP address suffix'
+                value={ipSuffix}
+                onChangeText={text => {
+                  setIpSuffix(text);
+                } }
+                style={{marginBottom: 10, width: '95%'}}
+              />
+              <TextInput
+                keyboardType={'numeric'}
+                label='Device network port'
+                value={port}
+                onChangeText={text => {
+                  setPort(text);
+                } }
+                style={{marginBottom: 10, width: '95%'}}
+              />
+              <TextInput
+                label='Export directory'
+                value={exportDirectory}
+                onChangeText={text => {
+                  setExportDirectory(text);
+                } }
+                style={{marginBottom: 10, width: '95%'}}
+              />
+            </ScrollView>
+          </Dialog.ScrollArea>
           <Dialog.Actions style={{justifyContent: 'space-between'}}>
             <View style={{flexDirection: 'row'}}>
               <Button onPress={discard}>Cancel</Button>
