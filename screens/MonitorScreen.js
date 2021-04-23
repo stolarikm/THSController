@@ -227,7 +227,7 @@ export default function MonitorScreen({navigation}) {
       {!devicesAvailable() && <NoDataComponent />}
       {devicesAvailable() && 
         <View style={styles.container}>
-          <View style={{flex: 6, display: !isPortrait ? 'none' : 'flex'}}>
+          <View style={{flex: 6, display: !isPortrait ? 'none' : 'flex', width: '100%'}}>
             <View style={{flex: 1, alignItems: 'center'}}>
               <View style={{ flexDirection: "row", marginTop: 5 }}>
                 <Text style={{ textAlign: "center", fontWeight: !isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5 }}>{"Temperature "}</Text>
@@ -235,7 +235,7 @@ export default function MonitorScreen({navigation}) {
                 <Text style={{ textAlign: "center", fontWeight: isHumidity ? 'bold' : 'normal', fontSize: 16, margin: 5, paddingRight: 30 }}>{"Humidity "}</Text>
               </View>
             </View>
-            <View style={{flex: 7, marginTop: 5 }}>
+            <View style={{flex: 7, flexDirection: "row", marginTop: 5 }}>
               <ScrollView contentContainerStyle={{alignItems: 'center'}}>
                 <View style={{ flexDirection: "row", flexWrap: 'wrap', justifyContent: 'center'}}>
                   {readings && readings.devices.map((device, index) => {
