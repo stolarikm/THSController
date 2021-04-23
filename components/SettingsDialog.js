@@ -134,7 +134,7 @@ const SettingsDialog = ({ visible, hideDialog }) => {
           <Dialog.Actions style={{justifyContent: 'space-between'}}>
             <View style={{flexDirection: 'row'}}>
               <Button onPress={discard}>Cancel</Button>
-              <Button onPress={reset}>Reset defaults</Button>
+              <Button onPress={reset}>Defaults</Button>
             </View>
             <View>
               <Button onPress={ok}>OK</Button>
