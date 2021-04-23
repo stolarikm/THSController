@@ -81,8 +81,8 @@ const MainCompoment = () => {
   if (inited) {
     return (
       <>
-          <Appbar.Header style={{display: !isPortrait ? 'none' : 'flex'}}>
-            {user && <Appbar.Action  icon="menu" onPress={() => setShowMenu(!showMenu)}/>}
+          <Appbar.Header style={{marginTop: 0, display: !isPortrait ? 'none' : 'flex'}}>
+            {user && <Appbar.Action icon="menu" onPress={() => setShowMenu(!showMenu)}/>}
             <Appbar.Content title={config && config.screenName}/>
           </Appbar.Header>
           <Drawer
