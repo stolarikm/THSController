@@ -186,7 +186,6 @@ exports[`renders correctly 1`] = `
                 "textAlign": "left",
                 "textAlignVertical": "center",
               },
-              false,
               Array [
                 Object {},
               ],
@@ -363,7 +362,6 @@ exports[`renders correctly 1`] = `
                 "textAlign": "left",
                 "textAlignVertical": "center",
               },
-              false,
               Array [
                 Object {},
               ],
