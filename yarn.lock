@@ -4835,9 +4835,9 @@ is-ci@^2.0.0:
     ci-info "^2.0.0"
 
 is-core-module@^2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/is-core-module/-/is-core-module-2.2.0.tgz#97037ef3d52224d85163f5597b2b63d9afed981a"
-  integrity sha512-XRAfAdyyY5F5cOXn7hYQDqh2Xmii+DEfIcQGxK/uNwMHhIkPWO0g8msXcbzLe+MpGoR951MlqM/2iIlU4vKDdQ==
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/is-core-module/-/is-core-module-2.3.0.tgz#d341652e3408bca69c4671b79a0954a3d349f887"
+  integrity sha512-xSphU2KG9867tsYdLD4RWQ1VqdFl4HTO9Thf3I/3dLEfr0dbPTWKsuCKrgqMljg4nPE+Gq0VCnzT3gr0CyBmsw==
   dependencies:
     has "^1.0.3"
 
@@ -7228,9 +7228,9 @@ react-native-modbus-tcp@^1.0.0:
   resolved "https://github.com/stolarikm/react-native-navbar-color.git#468eabeb6dbfdcafdd03cc7697a491940b5d102e"
 
 react-native-paper@^4.7.2:
-  version "4.8.0"
-  resolved "https://registry.yarnpkg.com/react-native-paper/-/react-native-paper-4.8.0.tgz#b50a58b39cf84a547211a86d2e6eb391066463e6"
-  integrity sha512-XgMxcXHbawCZJFLfvXYH7V7i9HEsgjs2EidtVpP8j8aonUknQAMlI4wihgSxL6419U6iFDEaY2FDFRVAWuhucw==
+  version "4.7.2"
+  resolved "https://registry.yarnpkg.com/react-native-paper/-/react-native-paper-4.7.2.tgz#a40d1da87af5b030d45b525313cd703d490876ff"
+  integrity sha512-MOcDWjBOaknEpQgdm4fIOsRFIt4PJlMCgWlLk4kIe8Wv99/M0JIoxWABkAf4Lj5BuJgXjXdwr0DA/lhGY1BRoQ==
   dependencies:
     "@callstack/react-theme-provider" "^3.0.5"
     color "^3.1.2"
