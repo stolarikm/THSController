@@ -14,4 +14,3 @@ Download link: https://bit.ly/3x5pDEh
 - cd app/build/outputs/apk/release -> adb install app-release.apk
 
 # ToDo list:
-- Tests
