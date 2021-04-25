@@ -31,7 +31,7 @@ export default class PeriodicalPollingService {
         
         var opts = {
             taskName: 'THS Controller',
-            taskTitle: 'Monitoring sensors',
+            taskTitle: 'Gateway service running',
             taskDesc: 'Tap to open the controller',
             taskIcon: {
                 name: 'ic_launcher',
