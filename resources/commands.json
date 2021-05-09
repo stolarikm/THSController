@@ -1,41 +1,41 @@
 [
-    {
-        "value": "temp_corr",
-        "label": "Temperature correction",
-        "register": 2000,
-        "domain": {
-            "type": "numeric",
-            "values": {
-                "min": -9.9,
-                "max": 9.9
-            }
-        }
-    },
-    {
-        "value": "humidity_corr",
-        "label": "Humidity correction",
-        "register": 2200,
-        "domain": {
-            "type": "numeric",
-            "values": {
-                "min": -9.9,
-                "max": 9.9
-            }
-        }
-    },
-    {
-        "value": "temp_units",
-        "label": "Temperature units",
-        "register": 2001,
-        "domain": {
-            "type": "string",
-            "values": ["C", "F"]
-        }
-    },
-    {
-        "value": "reinit",
-        "label": "Reinitialize",
-        "register": 1005,
-        "domain": null
+  {
+    "value": "temp_corr",
+    "label": "Temperature correction",
+    "register": 2000,
+    "domain": {
+      "type": "numeric",
+      "values": {
+        "min": -9.9,
+        "max": 9.9
+      }
     }
+  },
+  {
+    "value": "humidity_corr",
+    "label": "Humidity correction",
+    "register": 2200,
+    "domain": {
+      "type": "numeric",
+      "values": {
+        "min": -9.9,
+        "max": 9.9
+      }
+    }
+  },
+  {
+    "value": "temp_units",
+    "label": "Temperature units",
+    "register": 2001,
+    "domain": {
+      "type": "string",
+      "values": ["C", "F"]
+    }
+  },
+  {
+    "value": "reinit",
+    "label": "Reinitialize",
+    "register": 1005,
+    "domain": null
+  }
 ]

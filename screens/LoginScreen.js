@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar, View, StyleSheet, Button, Text } from 'react-native';
-import NavigationBar from 'react-native-navbar-color'
+import NavigationBar from 'react-native-navbar-color';
 import { TextInput, useTheme } from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 import LoadingOverlay from '../components/LoadingOverlay';
@@ -12,51 +12,52 @@ export default function LoginScreen({ navigation }) {
     NavigationBar.setColor('#005cb2');
   }, []);
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [repeatPassword, setRepeatPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [repeatPassword, setRepeatPassword] = useState('');
   const [registering, setRegistering] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [isLoading, setLoading] = useState(false);
   const { config, setConfig } = useConfig();
   const { colors } = useTheme();
 
-  useEffect(() => { //TODO refactor
+  useEffect(() => {
+    //TODO refactor
     const unsubscribe = navigation.addListener('focus', () => {
       let newConfig = {
         ...config,
-        screenName: "Login"
+        screenName: 'Login',
       };
       setConfig(newConfig);
     });
-    
+
     return unsubscribe;
   }, [navigation, config]);
 
   const parseError = (text) => {
     var from = text.indexOf(']') + 1;
     return text.substring(from).trim();
-  }
+  };
 
   const isValid = () => {
     if (!email) {
-      setError("Fill your email");
+      setError('Fill your email');
       return false;
     }
     if (!password) {
-      setError("Fill your password");
+      setError('Fill your password');
       return false;
     }
     if (registering && !repeatPassword) {
-      setError("Fill your repeated password");
+      setError('Fill your repeated password');
       return false;
     }
     if (registering && repeatPassword !== password) {
-      setError("Repeated password does not match password");
+      setError('Repeated password does not match password');
       return false;
     }
     return true;
-  }
+  };
 
   const register = (login, password) => {
     if (!isValid()) {
@@ -69,11 +70,11 @@ export default function LoginScreen({ navigation }) {
         navigation.replace('BottomDrawerNavigator');
         setLoading(false);
       })
-      .catch(error => {
+      .catch((error) => {
         setError(parseError(error.message));
         setLoading(false);
-    });
-  }
+      });
+  };
 
   const login = (login, password) => {
     if (!isValid()) {
@@ -85,75 +86,83 @@ export default function LoginScreen({ navigation }) {
       .then(() => {
         navigation.replace('BottomDrawerNavigator');
         setLoading(false);
-        setError("");
+        setError('');
       })
-      .catch(error => {
+      .catch((error) => {
         setError(parseError(error.message));
         setLoading(false);
       });
-  }
+  };
 
   return (
     <>
       <View style={styles.container}>
         <View style={{ flex: 1, marginLeft: 50, marginRight: 50 }}>
           <TextInput
-            style={{marginBottom: 20}}
-            label='Email'
+            style={{ marginBottom: 20 }}
+            label="Email"
             value={email}
-            onChangeText={text => setEmail(text)}
+            onChangeText={(text) => setEmail(text)}
           />
           <TextInput
-            style={{marginBottom: 20}}
+            style={{ marginBottom: 20 }}
             secureTextEntry={true}
-            label='Password'
+            label="Password"
             value={password}
-            onChangeText={text => setPassword(text)}
+            onChangeText={(text) => setPassword(text)}
           />
-          {registering && 
+          {registering && (
             <TextInput
-              style={{marginBottom: 20}}
+              style={{ marginBottom: 20 }}
               secureTextEntry={true}
-              label='Repeat password'
+              label="Repeat password"
               value={repeatPassword}
-              onChangeText={text => setRepeatPassword(text)}
+              onChangeText={(text) => setRepeatPassword(text)}
             />
-          }
-          {error !== "" && <View style={{ alignItems: "center" }}>
-            <Text style={{color: colors.error, marginBottom: 20}}>
-              {error}
-            </Text>
-          </View>}
-          <View style={{ alignItems: "center" }}>
-            <Text style={{color: '#1976d2', marginBottom: 20}}
+          )}
+          {error !== '' && (
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ color: colors.error, marginBottom: 20 }}>
+                {error}
+              </Text>
+            </View>
+          )}
+          <View style={{ alignItems: 'center' }}>
+            <Text
+              style={{ color: '#1976d2', marginBottom: 20 }}
               onPress={() => {
                 setRegistering(!registering);
-                setError("");
-              }}>
-              {registering ? "Already have an account" : "Create new account"}
+                setError('');
+              }}
+            >
+              {registering ? 'Already have an account' : 'Create new account'}
             </Text>
           </View>
-          {registering && 
-            <View style={{marginLeft: 60, marginRight: 60}}>
+          {registering && (
+            <View style={{ marginLeft: 60, marginRight: 60 }}>
               <Button
                 title="Register"
                 style={{ margin: 5 }}
                 onPress={() => register(email, password)}
-              >Log in</Button>
+              >
+                Log in
+              </Button>
             </View>
-          }
-          {!registering && 
-            <View style={{marginLeft: 60, marginRight: 60}}>
-              <Button 
+          )}
+          {!registering && (
+            <View style={{ marginLeft: 60, marginRight: 60 }}>
+              <Button
                 title="Log in"
                 style={{ margin: 5 }}
                 onPress={() => login(email, password)}
-              >Log in</Button>
+              >
+                Log in
+              </Button>
             </View>
-          }
+          )}
         </View>
       </View>
-    
+
       {isLoading && <LoadingOverlay />}
     </>
   );
@@ -166,5 +175,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#fafafa',
     alignItems: 'center',
     justifyContent: 'center',
-  }
+  },
 });

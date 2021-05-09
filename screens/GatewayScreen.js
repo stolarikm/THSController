@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import {StatusBar, StyleSheet, View, ScrollView} from 'react-native';
+import { StatusBar, StyleSheet, View, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
-import NavigationBar from 'react-native-navbar-color'
+import NavigationBar from 'react-native-navbar-color';
 import { FAB, Card, Title, Paragraph, IconButton } from 'react-native-paper';
 import { useConfig } from '../hooks/useConfig';
 import NewDeviceDialog from '../components/NewDeviceDialog';
@@ -11,13 +11,12 @@ import NetworkScanService from '../services/NetworkScanService';
 import { ActivityIndicator } from 'react-native';
 import FirebaseService from '../services/FirebaseService';
 import Toast from 'react-native-simple-toast';
-import { Icon } from 'react-native-elements'
+import { Icon } from 'react-native-elements';
 import LoadingOverlay from '../components/LoadingOverlay';
 import firestore from '@react-native-firebase/firestore';
-import RestartGatewayDataDialog from '../components/RestartGatewayDataDialog'
+import RestartGatewayDataDialog from '../components/RestartGatewayDataDialog';
 
-
-export default function GatewayScreen({navigation}) {
+export default function GatewayScreen({ navigation }) {
   useEffect(() => {
     StatusBar.setBackgroundColor('#005cb2');
     NavigationBar.setColor('#005cb2');
@@ -27,7 +26,9 @@ export default function GatewayScreen({navigation}) {
   const [modalOpen, setModalOpen] = useState(false);
   const [restartModalOpen, setRestartModalOpen] = useState(false);
   const [editedDevice, setEditedDevice] = useState(null);
-  const [isRunning, setRunning] = useState(PeriodicalPollingService.isRunning());
+  const [isRunning, setRunning] = useState(
+    PeriodicalPollingService.isRunning()
+  );
   const [isScanning, setScanning] = useState(false);
   const [isLoading, setLoading] = useState(false);
 
@@ -40,29 +41,33 @@ export default function GatewayScreen({navigation}) {
   //if the gateway service was running before the start of application
   //we have to restart it, to be able to sync the state with the service again
   useEffect(() => {
-    var restart = async() => {
+    var restart = async () => {
       if (isRunning) {
         setLoading(true);
         let timeout = parseInt(config.gatewayInterval);
         await PeriodicalPollingService.stop();
-        await PeriodicalPollingService.start(() => pollSensorsSequentially(config.devices), timeout * 1000);
+        await PeriodicalPollingService.start(
+          () => pollSensorsSequentially(config.devices),
+          timeout * 1000
+        );
         setLoading(false);
       }
-    }
+    };
     if (isRunning) {
       restart();
     }
   }, []);
 
-  useEffect(() => { //TODO refactor
+  useEffect(() => {
+    //TODO refactor
     const unsubscribe = navigation.addListener('focus', () => {
       let newConfig = {
         ...config,
-        screenName: "Gateway"
+        screenName: 'Gateway',
       };
       setConfig(newConfig);
     });
-    
+
     return unsubscribe;
   }, [navigation, config]);
 
@@ -92,18 +97,18 @@ export default function GatewayScreen({navigation}) {
       }
     }
     return 'grey';
-  }
+  };
 
   const success = (ip, success) => {
     states[ip] = { success: success };
     setStates(states);
     setCurrentDevice(null);
-  }
+  };
 
   const resetState = () => {
     setStates([]);
     setCurrentDevice(null);
-  }
+  };
 
   const validateIp = (ip) => {
     let parts = ip.split('.');
@@ -119,26 +124,32 @@ export default function GatewayScreen({navigation}) {
       }
     }
     return true;
-  }
+  };
 
   const validate = (device) => {
     if (!device.name) {
-      return { ok: false, error: "Please provide a device name"}
+      return { ok: false, error: 'Please provide a device name' };
     }
     if (!device.ip) {
-      return { ok: false, error: "Please provide a device IP address"}
+      return { ok: false, error: 'Please provide a device IP address' };
     }
     if (!validateIp(device.ip)) {
-      return { ok: false, error: "Please provide a valid IP adress"}
+      return { ok: false, error: 'Please provide a valid IP adress' };
     }
-    if (config.devices.some(d => d.name === device.name) && (!editedDevice || device.name !== editedDevice.name)) {
-      return { ok: false, error: "Device with this name already exists"}
+    if (
+      config.devices.some((d) => d.name === device.name) &&
+      (!editedDevice || device.name !== editedDevice.name)
+    ) {
+      return { ok: false, error: 'Device with this name already exists' };
     }
-    if (config.devices.some(d => d.ip === device.ip) && (!editedDevice || device.ip !== editedDevice.ip)) {
-      return { ok: false, error: "Device with this address already exists"}
+    if (
+      config.devices.some((d) => d.ip === device.ip) &&
+      (!editedDevice || device.ip !== editedDevice.ip)
+    ) {
+      return { ok: false, error: 'Device with this address already exists' };
     }
     return { ok: true };
-  }
+  };
 
   const addDevice = (device) => {
     if (editedDevice) {
@@ -148,7 +159,7 @@ export default function GatewayScreen({navigation}) {
     }
     setModalOpen(false);
     setEditedDevice(null);
-  }
+  };
 
   const beforeStart = async () => {
     if (await FirebaseService.areDataPresent()) {
@@ -156,25 +167,31 @@ export default function GatewayScreen({navigation}) {
     } else {
       onStart();
     }
-  }
+  };
 
   const overWriteAndStart = async () => {
     await FirebaseService.clearData();
     onStart();
-  }
+  };
 
   const onStart = async () => {
     setLoading(true);
     resetState();
-    if (!await FirebaseService.isGatewayLockAvailable()) {
+    if (!(await FirebaseService.isGatewayLockAvailable())) {
       fallbackToClientMode();
       setLoading(false);
-      Toast.show('Can not start gateway service, another gateway device already present. Falling back to client mode', Toast.LONG);
+      Toast.show(
+        'Can not start gateway service, another gateway device already present. Falling back to client mode',
+        Toast.LONG
+      );
       return;
     }
     let timeout = parseInt(config.gatewayInterval);
     if (config.devices.length > 0) {
-      await PeriodicalPollingService.start(() => pollSensorsSequentially(config.devices), timeout * 1000);
+      await PeriodicalPollingService.start(
+        () => pollSensorsSequentially(config.devices),
+        timeout * 1000
+      );
       Toast.show('Gateway service started');
       setRunning(true);
     }
@@ -184,12 +201,12 @@ export default function GatewayScreen({navigation}) {
   const fallbackToClientMode = () => {
     let newConfig = {
       ...config,
-      mode: 'client'
+      mode: 'client',
     };
     setConfig(newConfig);
     AsyncStorage.setItem(MODE, 'client');
     navigation.replace('BottomDrawerNavigator', { screen: 'Monitor' });
-  }
+  };
 
   const onStop = async () => {
     setLoading(true);
@@ -217,16 +234,21 @@ export default function GatewayScreen({navigation}) {
       for (sensor of sensors) {
         setCurrentDevice(sensor.ip);
         try {
-          var { temperature, humidity } = await ModbusService.readTemperatureAndHumidity(sensor.ip, port);
+          var {
+            temperature,
+            humidity,
+          } = await ModbusService.readTemperatureAndHumidity(sensor.ip, port);
           success(sensor.ip, true);
-          var data = { 
+          var data = {
             name: sensor.name,
             ip: sensor.ip,
-            readings: [{
-              time: firestore.Timestamp.fromDate(readTime),
-              temperature: temperature,
-              humidity: humidity
-            }]
+            readings: [
+              {
+                time: firestore.Timestamp.fromDate(readTime),
+                temperature: temperature,
+                humidity: humidity,
+              },
+            ],
           };
           updateData.push(data);
         } catch (error) {
@@ -235,13 +257,13 @@ export default function GatewayScreen({navigation}) {
       }
       FirebaseService.uploadReadings(updateData);
     }
-  }
+  };
 
   const getRoundTimestamp = () => {
     var result = new Date();
     result.setMilliseconds(0);
     return result;
-  } 
+  };
 
   const onAutoScan = () => {
     if (isScanning) {
@@ -250,151 +272,186 @@ export default function GatewayScreen({navigation}) {
       setDevices([]);
       setScanning(true);
     }
-  }
+  };
 
   const saveDevice = async (device) => {
     let newDevices = await getDevices();
     newDevices.push(device);
     await setDevices(newDevices);
-  }
+  };
 
   const editDevice = async (device) => {
     let newDevices = await getDevices();
-    var updatedDeviceRef = newDevices.find(d => d.ip === editedDevice.ip);
+    var updatedDeviceRef = newDevices.find((d) => d.ip === editedDevice.ip);
     updatedDeviceRef.name = device.name;
     updatedDeviceRef.ip = device.ip;
     await setDevices(newDevices);
-  }
+  };
 
   const deleteDevice = async (device) => {
     let devices = await getDevices();
-    let newDevices = devices.filter(d => d.ip !== device.ip);
+    let newDevices = devices.filter((d) => d.ip !== device.ip);
     await setDevices(newDevices);
-  }
+  };
 
   const getDevices = async () => {
     var devices = await AsyncStorage.getItem(DEVICES);
     var deviceList = JSON.parse(devices);
     return deviceList ?? [];
-  }
+  };
 
   const setDevices = async (devices) => {
     updateDevicesConfig(devices);
     var json = JSON.stringify(devices);
     await AsyncStorage.setItem(DEVICES, json);
-  }
+  };
 
   const updateDevicesConfig = (devices) => {
     let newConfig = {
       ...config,
-      devices: devices
+      devices: devices,
     };
     setConfig(newConfig);
-  }
+  };
 
   return (
     <>
       <View style={styles.container}>
-        {!isRunning && 
-            <FAB
-              icon="play"
-              label="Start"
-              onPress={() => beforeStart()}
-              disabled={!config || config.devices.length === 0 || isScanning}
+        {!isRunning && (
+          <FAB
+            icon="play"
+            label="Start"
+            onPress={() => beforeStart()}
+            disabled={!config || config.devices.length === 0 || isScanning}
+            style={{
+              position: 'absolute',
+              top: 30,
+              marginLeft: 'auto',
+              marginRight: 'auto',
+            }}
+          />
+        )}
+        {isRunning && (
+          <FAB
+            icon="stop"
+            label="Stop"
+            onPress={() => onStop()}
+            style={{
+              position: 'absolute',
+              top: 30,
+              marginLeft: 'auto',
+              marginRight: 'auto',
+            }}
+          />
+        )}
+        <View style={{ flex: 4, flexDirection: 'row', marginTop: 100 }}>
+          <ScrollView contentContainerStyle={{ alignItems: 'center' }}>
+            <View
               style={{
-                position: 'absolute',
-                top: 30,
-                marginLeft: 'auto', 
-                marginRight: 'auto'
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                justifyContent: 'center',
               }}
-            />
-          }
-          {isRunning && 
-            <FAB
-              icon="stop"
-              label="Stop"
-              onPress={() => onStop()}
-              style={{
-                position: 'absolute',
-                top: 30,
-                marginLeft: 'auto', 
-                marginRight: 'auto'
-              }}
-            />  
-        }
-        <View style={{ flex: 4, flexDirection: "row", marginTop: 100 }}>
-          <ScrollView contentContainerStyle={{alignItems: 'center'}}>
-            <View style={{ flexDirection: "row", flexWrap: 'wrap', justifyContent: 'center'}}>
-              {config && config.devices.map((element, index) => {
-                return (
-                  <Card key={index} style={{ margin: 5, height: 98, width: '45%' }}>
-                    <Card.Content>
-                      <View style={{ flexDirection: 'row' }}>
-                        <View style={{ flex: 9 }}>
-                          <View style={{flexDirection: 'row'}}>
-                            <Icon name='fiber-manual-record' size={15} color={getDeviceColor(element.ip)} style={{marginTop: 10, marginRight: 3}}/>
-                            <Title numberOfLines={1}>{element.name}</Title>
+            >
+              {config &&
+                config.devices.map((element, index) => {
+                  return (
+                    <Card
+                      key={index}
+                      style={{ margin: 5, height: 98, width: '45%' }}
+                    >
+                      <Card.Content>
+                        <View style={{ flexDirection: 'row' }}>
+                          <View style={{ flex: 9 }}>
+                            <View style={{ flexDirection: 'row' }}>
+                              <Icon
+                                name="fiber-manual-record"
+                                size={15}
+                                color={getDeviceColor(element.ip)}
+                                style={{ marginTop: 10, marginRight: 3 }}
+                              />
+                              <Title numberOfLines={1}>{element.name}</Title>
+                            </View>
+                            <Paragraph numberOfLines={1}>
+                              {element.ip}
+                            </Paragraph>
                           </View>
-                          <Paragraph numberOfLines={1}>{element.ip}</Paragraph>
+                          <View
+                            style={{
+                              flex: 2,
+                              alignItems: 'flex-start',
+                              justifyContent: 'flex-end',
+                              marginTop: 80,
+                            }}
+                          >
+                            <IconButton
+                              disabled={isRunning || isScanning}
+                              icon="pencil"
+                              color="grey"
+                              onPress={() => {
+                                setEditedDevice(element);
+                                setModalOpen(true);
+                              }}
+                            />
+                            <IconButton
+                              disabled={isRunning || isScanning}
+                              icon="delete"
+                              color="grey"
+                              onPress={() => deleteDevice(element)}
+                            />
+                          </View>
                         </View>
-                        <View style={{ flex: 2, alignItems: 'flex-start', justifyContent: 'flex-end', marginTop: 80 }}>
-                          <IconButton
-                            disabled={isRunning || isScanning}
-                            icon="pencil"
-                            color="grey"
-                            onPress={() => {setEditedDevice(element); setModalOpen(true)}}
-                          />
-                          <IconButton
-                            disabled={isRunning || isScanning}
-                            icon="delete"
-                            color="grey"
-                            onPress={() => deleteDevice(element)}
-                          />
-                        </View>
-                      </View>
-                    </Card.Content>
-                  </Card>
-                );
-              })}
+                      </Card.Content>
+                    </Card>
+                  );
+                })}
             </View>
           </ScrollView>
         </View>
-        <View style={{flex: 1}}>
-        {isScanning && 
-          <ActivityIndicator style={{marginBottom: 25}}
-            size='small'
-            color='#1976d2'/>
-        }
+        <View style={{ flex: 1 }}>
+          {isScanning && (
+            <ActivityIndicator
+              style={{ marginBottom: 25 }}
+              size="small"
+              color="#1976d2"
+            />
+          )}
         </View>
         <FAB
-            icon="plus"
-            label="Add"
-            onPress={() => {setModalOpen(true); setEditedDevice(null)}}
-            disabled={isScanning || isRunning}
-            style={{
-              position: 'absolute',
-              margin: 30,
-              right: 0,
-              bottom: 0
-            }}
-          />
-          <FAB
-            icon={isScanning ? "stop" : "sync"}
-            label={isScanning ? "Stop" : "Scan"}
-            onPress={onAutoScan}
-            disabled={isRunning}
-            style={{
-              position: 'absolute',
-              margin: 30,
-              left: 0,
-              bottom: 0
-            }}
-          />
+          icon="plus"
+          label="Add"
+          onPress={() => {
+            setModalOpen(true);
+            setEditedDevice(null);
+          }}
+          disabled={isScanning || isRunning}
+          style={{
+            position: 'absolute',
+            margin: 30,
+            right: 0,
+            bottom: 0,
+          }}
+        />
+        <FAB
+          icon={isScanning ? 'stop' : 'sync'}
+          label={isScanning ? 'Stop' : 'Scan'}
+          onPress={onAutoScan}
+          disabled={isRunning}
+          style={{
+            position: 'absolute',
+            margin: 30,
+            left: 0,
+            bottom: 0,
+          }}
+        />
       </View>
       <NewDeviceDialog
         updatedDevice={editedDevice}
         visible={modalOpen}
-        close={() => {setModalOpen(false); setEditedDevice(null)}}
+        close={() => {
+          setModalOpen(false);
+          setEditedDevice(null);
+        }}
         validate={validate}
         confirm={addDevice}
       />
@@ -414,5 +471,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#fafafa',
     alignItems: 'center',
     justifyContent: 'center',
-  }
+  },
 });

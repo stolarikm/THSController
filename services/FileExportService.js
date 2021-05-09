@@ -4,7 +4,6 @@ import { PermissionsAndroid, Platform } from 'react-native';
 import Toast from 'react-native-simple-toast';
 
 export default class FileExportService {
-
   static getFilename() {
     var date = new Date();
     var YYYY = `${date.getFullYear()}`.padStart(4, '0');
@@ -19,29 +18,38 @@ export default class FileExportService {
 
   static preprocessData(devices, dateFrom, selectedDevices) {
     return devices
-      .filter(device => selectedDevices.includes(device.ip))
-      .map((device) => { 
-        return { 
-          deviceName: device.name, 
+      .filter((device) => selectedDevices.includes(device.ip))
+      .map((device) => {
+        return {
+          deviceName: device.name,
           data: device.readings
-            .filter(reading => reading.time.toDate() >= dateFrom)
+            .filter((reading) => reading.time.toDate() >= dateFrom)
             .map((reading) => {
-              return { 
+              return {
                 Time: this.parseLabel(reading.time.toDate()),
                 Temperature: reading.temperature,
-                Humidity: reading.humidity }
-            })
-        }
-    });
+                Humidity: reading.humidity,
+              };
+            }),
+        };
+      });
   }
 
   static parseLabel = (date) => {
-    return date.getDate() + "." + (date.getMonth() + 1) + ". " + date.toTimeString().split(' ')[0];
-  }
+    return (
+      date.getDate() +
+      '.' +
+      (date.getMonth() + 1) +
+      '. ' +
+      date.toTimeString().split(' ')[0]
+    );
+  };
 
   static async exportToExcel(devices, directory, dateFrom, selectedDevices) {
     if (Platform.OS === 'android') {
-      var granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
+      var granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+      );
       if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
         return;
       }
@@ -49,22 +57,26 @@ export default class FileExportService {
     if (directory.slice(-1) !== '/') {
       directory += '/';
     }
-    
-    var dataArray = FileExportService.preprocessData(devices, dateFrom, selectedDevices);
+
+    var dataArray = FileExportService.preprocessData(
+      devices,
+      dateFrom,
+      selectedDevices
+    );
     var wb = XLSX.utils.book_new();
     for (deviceData of dataArray) {
       var ws = XLSX.utils.json_to_sheet(deviceData.data);
       XLSX.utils.book_append_sheet(wb, ws, deviceData.deviceName);
     }
 
-    const wbout = XLSX.write(wb, {type:'binary', bookType:"xlsx"});
+    const wbout = XLSX.write(wb, { type: 'binary', bookType: 'xlsx' });
     RNFS.mkdir(directory);
     const filename = directory + FileExportService.getFilename() + '.xlsx';
     writeFile(filename, wbout, 'ascii')
-      .then(()=>{ 
+      .then(() => {
         Toast.show('File saved to ' + filename, Toast.LONG);
       })
-      .catch((e)=>{ 
+      .catch((e) => {
         Toast.show('Can not save file: ' + e, Toast.LONG);
       });
   }

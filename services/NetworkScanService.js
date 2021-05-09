@@ -38,10 +38,12 @@ export default class NetworkScanService {
   static async getAvailableIps(commonIpSuffix) {
     var ip = await NetworkScanService.getIp();
     var subnet = await NetworkScanService.getSubnet();
-    var netmask = new NetmaskModule.Netmask(ip + "/" + subnet);
+    var netmask = new NetmaskModule.Netmask(ip + '/' + subnet);
     var availableIps = [];
     netmask.forEach((availableIp) => availableIps.push(availableIp));
-    availableIps.sort((ip1, ip2) => NetworkScanService.ipComparator(ip1, ip2, commonIpSuffix));
+    availableIps.sort((ip1, ip2) =>
+      NetworkScanService.ipComparator(ip1, ip2, commonIpSuffix)
+    );
     return availableIps;
   }
 
@@ -53,8 +55,8 @@ export default class NetworkScanService {
         return;
       }
       if (await ModbusService.isDevicePresent(ip, port)) {
-        var newDevice = { name: "Device #" + index, ip: ip };
-        index++;   
+        var newDevice = { name: 'Device #' + index, ip: ip };
+        index++;
         await processDeviceCallback(newDevice);
       }
     }
