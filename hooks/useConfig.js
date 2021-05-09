@@ -4,6 +4,9 @@ import RNFS from 'react-native-fs';
 const ConfigContext = React.createContext();
 const ConfigUpdateContext = React.createContext();
 
+/**
+ * Default configuration
+ */
 export const defaultConfig = {
   screenName: '',
   mode: 'client',
@@ -14,6 +17,10 @@ export const defaultConfig = {
   exportDirectory: RNFS.ExternalStorageDirectoryPath + '/THSControllerExport/',
 };
 
+/**
+ * Hook allowing to get and set config context
+ * Config context is used to store state shared between components
+ */
 export const useConfig = () => {
   return {
     config: useContext(ConfigContext),
@@ -21,6 +28,10 @@ export const useConfig = () => {
   };
 };
 
+/**
+ * Config context provider
+ * @param children children elements
+ */
 const ConfigProvider = ({ children }) => {
   const [config, setConfig] = useState(defaultConfig);
 

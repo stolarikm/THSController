@@ -10,9 +10,16 @@ import DrawerMenu from './DrawerMenu';
 import { useOrientation } from '../hooks/useOrientation';
 import AsyncStorage from '@react-native-community/async-storage';
 import LoadingOverlay from '../components/LoadingOverlay';
+import Constants from '../resources/Constants';
+import { StatusBar } from 'react-native';
+import NavigationBar from 'react-native-navbar-color';
 
 const Stack = createStackNavigator();
 
+/**
+ * Main component
+ * Encapsulating all screen components inside providers
+ */
 const MainCompoment = () => {
   const [showMenu, setShowMenu] = useState(false);
   const [inited, setInited] = useState(false);
@@ -20,44 +27,54 @@ const MainCompoment = () => {
   const user = auth().currentUser;
   const isPortrait = useOrientation();
 
-  const DEVICES = 'DEVICES';
-  const MODE = 'MODE';
-  const GATEWAY_INTERVAL = 'GATEWAY_INTERVAL';
-  const IP_SUFFIX = 'IP_SUFFIX';
-  const NETWORK_PORT = 'NETWORK_PORT';
-  const EXPORT_DIRECTORY = 'EXPORT_DIRECTORY';
+  /**
+   * Sets the colors of status bar and navigation bar on component mount
+   */
+  useEffect(() => {
+    StatusBar.setBackgroundColor('#005cb2');
+    NavigationBar.setColor('#005cb2');
+  }, []);
 
+  /**
+   * Loads the configuration on component mount
+   */
   useEffect(() => {
     init();
   }, []);
 
+  /**
+   * Re-renders the layout on orientation change
+   */
   useEffect(() => {
     //render
   }, [isPortrait]);
 
+  /**
+   * Loads the configuration
+   */
   const init = async () => {
     let newConfig = {};
-    let devices = await getObject(DEVICES);
+    let devices = await getObject(Constants.DEVICES);
     if (devices) {
       newConfig.devices = devices;
     }
-    let mode = await get(MODE);
+    let mode = await get(Constants.MODE);
     if (mode) {
       newConfig.mode = mode;
     }
-    let gatewayInterval = await get(GATEWAY_INTERVAL);
+    let gatewayInterval = await get(Constants.GATEWAY_INTERVAL);
     if (gatewayInterval) {
       newConfig.gatewayInterval = gatewayInterval;
     }
-    let ipSuffix = await get(IP_SUFFIX);
+    let ipSuffix = await get(Constants.IP_SUFFIX);
     if (ipSuffix) {
       newConfig.ipSuffix = ipSuffix;
     }
-    let networkPort = await get(NETWORK_PORT);
+    let networkPort = await get(Constants.NETWORK_PORT);
     if (networkPort) {
       newConfig.networkPort = networkPort;
     }
-    let exportDirectory = await get(EXPORT_DIRECTORY);
+    let exportDirectory = await get(Constants.EXPORT_DIRECTORY);
     if (exportDirectory) {
       newConfig.exportDirectory = exportDirectory;
     }
@@ -65,15 +82,28 @@ const MainCompoment = () => {
     setInited(true);
   };
 
+  /**
+   * Gets string from async storage
+   * @param label item label
+   */
   const get = async (label) => {
     return await AsyncStorage.getItem(label);
   };
 
+  /**
+   * Gets object from async storage
+   * @param label item label
+   */
   const getObject = async (label) => {
     let result = await get(label);
     return JSON.parse(result);
   };
 
+  /**
+   * Returns the initial screen
+   * Login screen for not logged-in users
+   * Navigator form main screens for logged-in users
+   */
   const initialScreen = () => {
     return auth().currentUser ? 'BottomDrawerNavigator' : 'LoginScreen';
   };

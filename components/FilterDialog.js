@@ -1,9 +1,20 @@
 import React, { useState } from 'react';
 import { Button, Dialog, Portal, RadioButton } from 'react-native-paper';
 
+/**
+ * Dialog window used to filter the graph data by time period
+ * @param visible true if the dialog is open
+ * @param close callback called when dialog is dismissed
+ * @param currentFilter currenlty selected filter
+ * @param confirm callback called when dialog is confirmed
+ */
 const FilterDialog = ({ visible, close, currentFilter, confirm }) => {
   const [filter, setFilter] = useState(currentFilter);
 
+  /**
+   * Confirms the dialog
+   * Calls confirm callback
+   */
   const ok = () => {
     confirm(filter);
     close();

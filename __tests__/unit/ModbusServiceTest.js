@@ -1,5 +1,8 @@
 import ModbusService from '../../services/ModbusService';
 
+/**
+ * Unit tests for ModbusService module
+ */
 it('connects to existing device correctly', async () => {
   await expect(ModbusService.connect('192.168.100.68', '502')).resolves.toEqual(
     'success'

@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { StatusBar, View, StyleSheet, Button, Text } from 'react-native';
-import NavigationBar from 'react-native-navbar-color';
+import { View, StyleSheet, Button, Text } from 'react-native';
 import { TextInput, useTheme } from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { useConfig } from '../hooks/useConfig';
 
+/**
+ * Login screen component
+ * @param navigation navigation context
+ */
 export default function LoginScreen({ navigation }) {
-  useEffect(() => {
-    StatusBar.setBackgroundColor('#005cb2');
-    NavigationBar.setColor('#005cb2');
-  }, []);
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
@@ -21,8 +19,10 @@ export default function LoginScreen({ navigation }) {
   const { config, setConfig } = useConfig();
   const { colors } = useTheme();
 
+  /**
+   * Sets the current screen name in config context
+   */
   useEffect(() => {
-    //TODO refactor
     const unsubscribe = navigation.addListener('focus', () => {
       let newConfig = {
         ...config,
@@ -30,15 +30,23 @@ export default function LoginScreen({ navigation }) {
       };
       setConfig(newConfig);
     });
-
+    //clear
     return unsubscribe;
   }, [navigation, config]);
 
+  /**
+   * Parses error from Firebase technical error message
+   * @param text Firebase technical error message
+   */
   const parseError = (text) => {
     var from = text.indexOf(']') + 1;
     return text.substring(from).trim();
   };
 
+  /**
+   * Validates inputs
+   * Return true if validation passed
+   */
   const isValid = () => {
     if (!email) {
       setError('Fill your email');
@@ -59,6 +67,12 @@ export default function LoginScreen({ navigation }) {
     return true;
   };
 
+  /**
+   * Registers new user
+   * Navigates to main screens navigator if succesful
+   * @param login login email
+   * @param password password
+   */
   const register = (login, password) => {
     if (!isValid()) {
       return;
@@ -76,6 +90,12 @@ export default function LoginScreen({ navigation }) {
       });
   };
 
+  /**
+   * Logs in existing user
+   * Navigates to main screens navigator if succesful
+   * @param login login email
+   * @param password password
+   */
   const login = (login, password) => {
     if (!isValid()) {
       return;

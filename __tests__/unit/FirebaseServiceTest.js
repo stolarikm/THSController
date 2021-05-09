@@ -1,6 +1,9 @@
 import FirebaseService from '../../services/FirebaseService';
 jest.mock('react-native/Libraries/EventEmitter/NativeEventEmitter');
 
+/**
+ * Unit tests for FirebaseService module
+ */
 it('creates default model correctly', () => {
   const result = FirebaseService.defaultModel();
   const expected = {

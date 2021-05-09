@@ -1,12 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  ScrollView,
-  processColor,
-  StatusBar,
-  Text,
-} from 'react-native';
+import { StyleSheet, View, ScrollView, processColor, Text } from 'react-native';
 import {
   Card,
   Title,
@@ -19,7 +12,6 @@ import { LineChart } from 'react-native-charts-wrapper';
 import { useOrientation } from '../hooks/useOrientation';
 import firestore from '@react-native-firebase/firestore';
 import { useConfig } from '../hooks/useConfig';
-import NavigationBar from 'react-native-navbar-color';
 import FileExportService from '../services/FileExportService';
 import auth from '@react-native-firebase/auth';
 import FilterDialog from '../components/FilterDialog';
@@ -47,12 +39,40 @@ function* generateColors(i) {
 
 const colorGenerator = generateColors(0);
 
+/**
+ * Monitor screen component
+ * @param navigation navigation context
+ */
 export default function MonitorScreen({ navigation }) {
-  useEffect(() => {
-    StatusBar.setBackgroundColor('#005cb2');
-    NavigationBar.setColor('#005cb2');
-  }, []);
+  const user = auth().currentUser;
+  const [readings, setReadings] = useState({ devices: [] });
+  const [isHumidity, setisHumidity] = useState(false);
+  const { config, setConfig } = useConfig();
+  const isPortrait = useOrientation();
+  const [filter, setFilter] = useState('none');
+  const [filterModalOpen, setFilterModalOpen] = useState(false);
+  const [selectedDevices, setSelectedDevices] = useState([]);
+  const [deviceColors, setDeviceColors] = useState({});
+  const graph = useRef(null);
 
+  /**
+   * Sets the current screen name in config context
+   */
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      let newConfig = {
+        ...config,
+        screenName: 'Monitor',
+      };
+      setConfig(newConfig);
+    });
+    //cleanup
+    return unsubscribe;
+  }, [navigation, config]);
+
+  /**
+   * Registers a snapshot listener to the Firestore
+   */
   useEffect(() => {
     var unsubscribe = firestore()
       .collection('readings')
@@ -71,30 +91,9 @@ export default function MonitorScreen({ navigation }) {
     return unsubscribe;
   }, []);
 
-  const user = auth().currentUser;
-  const [readings, setReadings] = useState({ devices: [] });
-  const [isHumidity, setisHumidity] = useState(false);
-  const { config, setConfig } = useConfig();
-  const isPortrait = useOrientation();
-  const [filter, setFilter] = useState('none');
-  const [filterModalOpen, setFilterModalOpen] = useState(false);
-  const [selectedDevices, setSelectedDevices] = useState([]);
-  const [deviceColors, setDeviceColors] = useState({});
-  const graph = useRef(null);
-
-  useEffect(() => {
-    //TODO refactor
-    const unsubscribe = navigation.addListener('focus', () => {
-      let newConfig = {
-        ...config,
-        screenName: 'Monitor',
-      };
-      setConfig(newConfig);
-    });
-
-    return unsubscribe;
-  }, [navigation, config]);
-
+  /**
+   * Assigns the colors and selects the newly added devices
+   */
   useEffect(() => {
     if (!readings || !readings.devices || readings.devices.length === 0) {
       setSelectedDevices([]);
@@ -120,12 +119,20 @@ export default function MonitorScreen({ navigation }) {
     }
   }, [readings]);
 
+  /**
+   * Clears the higlighted points of the graph
+   * (graph with highlights crashes when graph data are changed)
+   */
   const deselectGraph = () => {
     if (graph && graph.current) {
       graph.current.highlights([]);
     }
   };
 
+  /**
+   * Select device to be included in the graph and exports
+   * @param ip ip of the device
+   */
   const selectDevice = (ip) => {
     deselectGraph();
     var newSelectedDevices = [...selectedDevices];
@@ -137,14 +144,26 @@ export default function MonitorScreen({ navigation }) {
     setSelectedDevices(newSelectedDevices);
   };
 
+  /**
+   * Returns true if the device is selected
+   * @param ip ip of the device
+   */
   const isDeviceSelected = (ip) => {
     return selectedDevices.includes(ip);
   };
 
+  /**
+   * Returns the assigned color of the device
+   * @param ip ip of the device
+   */
   const getDeviceColor = (ip) => {
     return deviceColors[ip] ? deviceColors[ip] : 'grey';
   };
 
+  /**
+   * Get data set containing readings of the particular device
+   * @param ip ip of the device
+   */
   const getDataSet = (ip) => {
     var device = readings.devices.find((d) => d.ip === ip);
     if (!device) {
@@ -158,14 +177,23 @@ export default function MonitorScreen({ navigation }) {
       .map((r) => (isHumidity ? r.humidity : r.temperature));
   };
 
+  /**
+   * Returns true, if there is only one timestamp of data readings
+   */
   const isSingleData = () => {
     return devicesAvailable() && readings.devices[0].readings.length === 1;
   };
 
+  /**
+   * Returns true, if there is only one or two timestamps of data readings
+   */
   const isSingleOrDoubleData = () => {
     return devicesAvailable() && readings.devices[0].readings.length <= 2;
   };
 
+  /**
+   * Returns data sets of the readings by all available devices
+   */
   const getDataSets = () => {
     if (!devicesAvailable()) {
       return [];
@@ -181,6 +209,9 @@ export default function MonitorScreen({ navigation }) {
       });
   };
 
+  /**
+   * Returns timestamp labels of the data readings
+   */
   const getLabelArray = () => {
     if (!devicesAvailable()) {
       return [];
@@ -191,6 +222,10 @@ export default function MonitorScreen({ navigation }) {
       .map((r) => parseLabel(r.time.toDate()));
   };
 
+  /**
+   * Parses timestamp to strin label
+   * @param date date timestamp
+   */
   const parseLabel = (date) => {
     return (
       date.getDate() +
@@ -201,6 +236,9 @@ export default function MonitorScreen({ navigation }) {
     );
   };
 
+  /**
+   * Returns labels configuration of the graph view
+   */
   const getLabels = () => {
     return {
       valueFormatter: getLabelArray(),
@@ -215,6 +253,9 @@ export default function MonitorScreen({ navigation }) {
     };
   };
 
+  /**
+   * Returns the lower timestamp boundary according to the selected filter
+   */
   const getFilterBoundary = () => {
     let result = new Date();
     result.setMilliseconds(0);
@@ -240,10 +281,16 @@ export default function MonitorScreen({ navigation }) {
     return result;
   };
 
+  /**
+   * Returns true if there are any devices selected
+   */
   const shouldShowGraph = () => {
     return selectedDevices.length > 0;
   };
 
+  /**
+   * Returns true if there are data readings from at least one device
+   */
   const devicesAvailable = () => {
     return readings && readings.devices && readings.devices.length > 0;
   };

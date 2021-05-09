@@ -5,19 +5,31 @@ import FirebaseService from '../services/FirebaseService';
 import Toast from 'react-native-simple-toast';
 import AsyncStorage from '@react-native-community/async-storage';
 import PeriodicalPollingService from '../services/PeriodicalPollingService';
+import Constants from '../resources/Constants';
 
+/**
+ * Dialog window with switch application mode options
+ * @param visible true if the dialog is open
+ * @param hideDialog callback called on dialog dismiss
+ */
 const SwitchModeDialog = ({ visible, hideDialog }) => {
   const { config, setConfig } = useConfig();
   const [mode, setMode] = React.useState(config.mode);
 
+  /**
+   * Initializes the current application mode from config context
+   */
   useEffect(() => {
     if (visible) {
       setMode(config.mode);
     }
   }, [visible]);
 
-  const MODE = 'MODE';
-
+  /**
+   * Confirms the dialog
+   * Fails on try to switch to gateway mode when there is already a gateway service running
+   * Saves the new mode to async storage and config context
+   */
   const ok = async () => {
     if (mode === 'client' && PeriodicalPollingService.isRunning()) {
       Toast.show(
@@ -43,9 +55,12 @@ const SwitchModeDialog = ({ visible, hideDialog }) => {
       mode: mode,
     };
     setConfig(newConfig);
-    AsyncStorage.setItem(MODE, mode);
+    AsyncStorage.setItem(Constants.MODE, mode);
   };
 
+  /**
+   * Discards the dialog
+   */
   const discard = () => {
     hideDialog();
     setMode(config.mode);

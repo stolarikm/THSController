@@ -1,5 +1,8 @@
 import NetworkScanService from '../../services/NetworkScanService';
 
+/**
+ * Unit tests for NetworkScanService module
+ */
 it('returns devices IP address correctly', async () => {
   await expect(NetworkScanService.getIp()).resolves.toEqual('192.168.100.57');
 });

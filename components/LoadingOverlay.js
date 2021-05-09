@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { BlurView } from '@react-native-community/blur';
 
+/**
+ * Fullscreen blur overlay with loading spinner
+ */
 const LoadingOverlay = () => {
   const [height, setHeight] = useState(0);
 

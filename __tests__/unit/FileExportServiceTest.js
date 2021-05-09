@@ -1,5 +1,8 @@
 import FileExportService from '../../services/FileExportService';
 
+/**
+ * Unit tests for FileExportService module
+ */
 it('parses time label correctly', () => {
   const filename = FileExportService.parseLabel(
     new Date(2021, 0, 1, 14, 35, 22)

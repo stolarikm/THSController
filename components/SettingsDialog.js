@@ -5,7 +5,13 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { defaultConfig } from '../hooks/useConfig';
 import { ScrollView, View } from 'react-native';
 import Toast from 'react-native-simple-toast';
+import Constants from '../resources/Constants';
 
+/**
+ * Settings dialog window
+ * @param visible true if the dialog is open
+ * @param hideDialog callback called on dialog dismiss
+ */
 const SettingsDialog = ({ visible, hideDialog }) => {
   const { config, setConfig } = useConfig();
   const [gatewayInterval, setGatewayInterval] = useState('');
@@ -13,6 +19,9 @@ const SettingsDialog = ({ visible, hideDialog }) => {
   const [port, setPort] = useState('');
   const [exportDirectory, setExportDirectory] = useState('');
 
+  /**
+   * Initializes the current configuration on dialog open
+   */
   useEffect(() => {
     setGatewayInterval(config.gatewayInterval);
     setIpSuffix(config.ipSuffix);
@@ -20,11 +29,10 @@ const SettingsDialog = ({ visible, hideDialog }) => {
     setExportDirectory(config.exportDirectory);
   }, [visible]);
 
-  const GATEWAY_INTERVAL = 'GATEWAY_INTERVAL';
-  const IP_SUFFIX = 'IP_SUFFIX';
-  const NETWORK_PORT = 'NETWORK_PORT';
-  const EXPORT_DIRECTORY = 'EXPORT_DIRECTORY';
-
+  /**
+   * Confirms the dialog
+   * Validates inputs and sets the configuration to the config context and async storage
+   */
   const ok = () => {
     let validation = validate();
     if (!validation.ok) {
@@ -42,12 +50,15 @@ const SettingsDialog = ({ visible, hideDialog }) => {
     };
     setConfig(newConfig);
 
-    AsyncStorage.setItem(GATEWAY_INTERVAL, gatewayInterval);
-    AsyncStorage.setItem(IP_SUFFIX, ipSuffix);
-    AsyncStorage.setItem(NETWORK_PORT, port);
-    AsyncStorage.setItem(EXPORT_DIRECTORY, exportDirectory);
+    AsyncStorage.setItem(Constants.GATEWAY_INTERVAL, gatewayInterval);
+    AsyncStorage.setItem(Constants.IP_SUFFIX, ipSuffix);
+    AsyncStorage.setItem(Constants.NETWORK_PORT, port);
+    AsyncStorage.setItem(Constants.EXPORT_DIRECTORY, exportDirectory);
   };
 
+  /**
+   * Validates the settings values
+   */
   const validate = () => {
     if (
       !gatewayInterval ||
@@ -91,10 +102,16 @@ const SettingsDialog = ({ visible, hideDialog }) => {
     return { ok: true };
   };
 
+  /**
+   * Discards the dialog
+   */
   const discard = () => {
     hideDialog();
   };
 
+  /**
+   * Resets defaults to inputs
+   */
   const reset = () => {
     setGatewayInterval(defaultConfig.gatewayInterval);
     setIpSuffix(defaultConfig.ipSuffix);

@@ -9,21 +9,30 @@ import SettingsDialog from './SettingsDialog';
 import { useOrientation } from '../hooks/useOrientation';
 import ClearDataDialog from './ClearDataDialog';
 
+/**
+ * Drawer menu, accessible from menu icon in the appbar
+ * @param close callback which is called when closing the drawer
+ */
 const DrawerMenu = ({ close }) => {
   const user = auth().currentUser;
   const { config } = useConfig();
   const isPortrait = useOrientation();
-
   const [showSwitchModeDialog, setShowSwitchModeDialog] = useState(false);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showClearDataDialog, setShowClearDataDialog] = useState(false);
 
+  /**
+   * Closes the drawer menu on landscape orientation
+   */
   useEffect(() => {
     if (!isPortrait) {
       close();
     }
   }, [isPortrait]);
 
+  /**
+   * Logs out the user and redirects to Login screen
+   */
   const logout = () => {
     auth()
       .signOut()
@@ -33,17 +42,26 @@ const DrawerMenu = ({ close }) => {
       });
   };
 
-  const switchMode = () => {
+  /**
+   * Opens the switch mode dialog
+   */
+  const openSwitchModeDialog = () => {
     close();
     setShowSwitchModeDialog(true);
   };
 
-  const settings = () => {
+  /**
+   * Opens the settings dialog
+   */
+  const openSettingsDialog = () => {
     close();
     setShowSettingsDialog(true);
   };
 
-  const clearData = () => {
+  /**
+   * Opens the clear data dialog
+   */
+  const openClearDataDialog = () => {
     close();
     setShowClearDataDialog(true);
   };
@@ -58,10 +76,18 @@ const DrawerMenu = ({ close }) => {
         <DrawerItem
           text={'Switch mode '}
           icon={'swap-vert'}
-          onPress={switchMode}
+          onPress={openSwitchModeDialog}
         />
-        <DrawerItem text={'Settings '} icon={'settings'} onPress={settings} />
-        <DrawerItem text={'Clear data '} icon={'delete'} onPress={clearData} />
+        <DrawerItem
+          text={'Settings '}
+          icon={'settings'}
+          onPress={openSettingsDialog}
+        />
+        <DrawerItem
+          text={'Clear data '}
+          icon={'delete'}
+          onPress={openClearDataDialog}
+        />
         <DrawerItem text={'Logout '} icon={'exit-to-app'} onPress={logout} />
       </View>
       <SwitchModeDialog

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StatusBar, StyleSheet, View, ScrollView } from 'react-native';
+import { StyleSheet, View, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
-import NavigationBar from 'react-native-navbar-color';
 import { FAB, Card, Title, Paragraph, IconButton } from 'react-native-paper';
 import { useConfig } from '../hooks/useConfig';
 import NewDeviceDialog from '../components/NewDeviceDialog';
@@ -15,13 +14,13 @@ import { Icon } from 'react-native-elements';
 import LoadingOverlay from '../components/LoadingOverlay';
 import firestore from '@react-native-firebase/firestore';
 import RestartGatewayDataDialog from '../components/RestartGatewayDataDialog';
+import Constants from '../resources/Constants';
 
+/**
+ * Gateway screen component
+ * @param navigation navigation context
+ */
 export default function GatewayScreen({ navigation }) {
-  useEffect(() => {
-    StatusBar.setBackgroundColor('#005cb2');
-    NavigationBar.setColor('#005cb2');
-  }, []);
-
   const { config, setConfig } = useConfig();
   const [modalOpen, setModalOpen] = useState(false);
   const [restartModalOpen, setRestartModalOpen] = useState(false);
@@ -31,35 +30,13 @@ export default function GatewayScreen({ navigation }) {
   );
   const [isScanning, setScanning] = useState(false);
   const [isLoading, setLoading] = useState(false);
-
   const [currentDevice, setCurrentDevice] = useState(null);
   const [states, setStates] = useState([]);
 
-  const DEVICES = 'DEVICES';
-  const MODE = 'MODE';
-
-  //if the gateway service was running before the start of application
-  //we have to restart it, to be able to sync the state with the service again
+  /**
+   * Sets the current screen name in config context
+   */
   useEffect(() => {
-    var restart = async () => {
-      if (isRunning) {
-        setLoading(true);
-        let timeout = parseInt(config.gatewayInterval);
-        await PeriodicalPollingService.stop();
-        await PeriodicalPollingService.start(
-          () => pollSensorsSequentially(config.devices),
-          timeout * 1000
-        );
-        setLoading(false);
-      }
-    };
-    if (isRunning) {
-      restart();
-    }
-  }, []);
-
-  useEffect(() => {
-    //TODO refactor
     const unsubscribe = navigation.addListener('focus', () => {
       let newConfig = {
         ...config,
@@ -67,10 +44,42 @@ export default function GatewayScreen({ navigation }) {
       };
       setConfig(newConfig);
     });
-
+    //clear
     return unsubscribe;
   }, [navigation, config]);
 
+  /**
+   * Manages the auto-restart of the gateway service
+   * The auto-restart of the gateway service is performed when the application was started
+   * while gateway service was already running
+   */
+  useEffect(() => {
+    /**
+     * Processes the auto-restart of the gateway service if application was started while gateway service was running
+     */
+    var restart = async () => {
+      if (isRunning) {
+        setLoading(true);
+        let timeout = parseInt(config.gatewayInterval);
+        await PeriodicalPollingService.stop();
+        await PeriodicalPollingService.start(
+          () => gatewayServiceTask(config.devices),
+          timeout * 1000
+        );
+        setLoading(false);
+      }
+    };
+
+    if (isRunning) {
+      //if the gateway service was running before the start of application
+      //we have to restart it, to be able to sync the state with the service again
+      restart();
+    }
+  }, []);
+
+  /**
+   * Manages the start and stop of the auto-scan feature
+   */
   useEffect(() => {
     if (isScanning) {
       let startScan = async () => {
@@ -85,6 +94,13 @@ export default function GatewayScreen({ navigation }) {
     }
   }, [isScanning]);
 
+  /**
+   * Returns the status color of the device
+   * Orange - READING
+   * Green - SUCCESS
+   * RED - FAIL
+   * @param ip of the device
+   */
   const getDeviceColor = (ip) => {
     if (isRunning && currentDevice === ip) {
       return 'orange';
@@ -99,17 +115,30 @@ export default function GatewayScreen({ navigation }) {
     return 'grey';
   };
 
+  /**
+   * Callback to set devices state to SUCCESS or FAIL
+   * @param ip ip of the device
+   * @param success true if the read was succesful, false otherwise
+   */
   const success = (ip, success) => {
     states[ip] = { success: success };
     setStates(states);
     setCurrentDevice(null);
   };
 
+  /**
+   * Resets the state of the devices
+   */
   const resetState = () => {
     setStates([]);
     setCurrentDevice(null);
   };
 
+  /**
+   * Validates the ip address
+   * Returns true if the ip address is valid, false otherwise
+   * @param ip input
+   */
   const validateIp = (ip) => {
     let parts = ip.split('.');
     if (parts.length !== 4) {
@@ -126,6 +155,11 @@ export default function GatewayScreen({ navigation }) {
     return true;
   };
 
+  /**
+   * Validates the device configuration
+   * Returns { ok: true if validation passed, error: error message, if any }
+   * @param device device configuration
+   */
   const validate = (device) => {
     if (!device.name) {
       return { ok: false, error: 'Please provide a device name' };
@@ -151,6 +185,12 @@ export default function GatewayScreen({ navigation }) {
     return { ok: true };
   };
 
+  /**
+   * Add device callback
+   * Adds device if a new device was being configured
+   * Updates existing device if a device was being edited
+   * @param device devices configuration
+   */
   const addDevice = (device) => {
     if (editedDevice) {
       editDevice(device);
@@ -161,20 +201,33 @@ export default function GatewayScreen({ navigation }) {
     setEditedDevice(null);
   };
 
-  const beforeStart = async () => {
+  /**
+   * Processes the start gateway service action
+   * Opens restart modal if there are already some data reading present
+   * Starts the gateway service otherwise
+   */
+  const processStart = async () => {
     if (await FirebaseService.areDataPresent()) {
       setRestartModalOpen(true);
     } else {
-      onStart();
+      startGatewayService();
     }
   };
 
+  /**
+   * Confirms the restart modal
+   * Clears previous data readings and starts the gateway service
+   */
   const overWriteAndStart = async () => {
     await FirebaseService.clearData();
-    onStart();
+    startGatewayService();
   };
 
-  const onStart = async () => {
+  /**
+   * Starts the gateway service
+   * Fails if the gateway lock is not available (meaning another gateway device is present)
+   */
+  const startGatewayService = async () => {
     setLoading(true);
     resetState();
     if (!(await FirebaseService.isGatewayLockAvailable())) {
@@ -189,7 +242,7 @@ export default function GatewayScreen({ navigation }) {
     let timeout = parseInt(config.gatewayInterval);
     if (config.devices.length > 0) {
       await PeriodicalPollingService.start(
-        () => pollSensorsSequentially(config.devices),
+        () => gatewayServiceTask(config.devices),
         timeout * 1000
       );
       Toast.show('Gateway service started');
@@ -198,16 +251,23 @@ export default function GatewayScreen({ navigation }) {
     setLoading(false);
   };
 
+  /**
+   * Falls back to client mode if there is another gateway device present
+   * Redirects to Monitor screen
+   */
   const fallbackToClientMode = () => {
     let newConfig = {
       ...config,
       mode: 'client',
     };
     setConfig(newConfig);
-    AsyncStorage.setItem(MODE, 'client');
+    AsyncStorage.setItem(Constants.MODE, 'client');
     navigation.replace('BottomDrawerNavigator', { screen: 'Monitor' });
   };
 
+  /**
+   * Stops the gateway service
+   */
   const onStop = async () => {
     setLoading(true);
     resetState();
@@ -217,7 +277,12 @@ export default function GatewayScreen({ navigation }) {
     setLoading(false);
   };
 
-  const pollSensorsSequentially = async (sensors) => {
+  /**
+   * The gateway service task
+   * Firstly, check the command queue for next command and send it if present
+   * Secondly, squentially reads the devices data
+   */
+  const gatewayServiceTask = async (sensors) => {
     let port = parseInt(config.networkPort);
     //send commands
     var command = await FirebaseService.popCommand();
@@ -227,7 +292,7 @@ export default function GatewayScreen({ navigation }) {
       }
     }
 
-    //monitor
+    //read data
     var readTime = getRoundTimestamp();
     if (sensors && sensors.length > 0) {
       var updateData = [];
@@ -259,12 +324,18 @@ export default function GatewayScreen({ navigation }) {
     }
   };
 
+  /**
+   * Returns timestamp with 0 milliseconds
+   */
   const getRoundTimestamp = () => {
     var result = new Date();
     result.setMilliseconds(0);
     return result;
   };
 
+  /**
+   * Sets auto-scan to running
+   */
   const onAutoScan = () => {
     if (isScanning) {
       setScanning(false);
@@ -274,12 +345,18 @@ export default function GatewayScreen({ navigation }) {
     }
   };
 
+  /**
+   * Saves new device configuration
+   */
   const saveDevice = async (device) => {
     let newDevices = await getDevices();
     newDevices.push(device);
     await setDevices(newDevices);
   };
 
+  /**
+   * Updates existing device configuration
+   */
   const editDevice = async (device) => {
     let newDevices = await getDevices();
     var updatedDeviceRef = newDevices.find((d) => d.ip === editedDevice.ip);
@@ -288,24 +365,38 @@ export default function GatewayScreen({ navigation }) {
     await setDevices(newDevices);
   };
 
+  /**
+   * Deletes existing devices configuration
+   */
   const deleteDevice = async (device) => {
     let devices = await getDevices();
     let newDevices = devices.filter((d) => d.ip !== device.ip);
     await setDevices(newDevices);
   };
 
+  /**
+   * Returns configuration of devices from async storage (persisted between application starts)
+   */
   const getDevices = async () => {
-    var devices = await AsyncStorage.getItem(DEVICES);
+    var devices = await AsyncStorage.getItem(Constants.DEVICES);
     var deviceList = JSON.parse(devices);
     return deviceList ?? [];
   };
 
+  /**
+   * Saves the devices configuration into the async storage (to persist between application starts)
+   * @param devices devices configuration
+   */
   const setDevices = async (devices) => {
     updateDevicesConfig(devices);
     var json = JSON.stringify(devices);
-    await AsyncStorage.setItem(DEVICES, json);
+    await AsyncStorage.setItem(Constants.DEVICES, json);
   };
 
+  /**
+   * Updates devices configuration in the configuration context
+   * @param devices devices configuration to update
+   */
   const updateDevicesConfig = (devices) => {
     let newConfig = {
       ...config,
@@ -321,7 +412,7 @@ export default function GatewayScreen({ navigation }) {
           <FAB
             icon="play"
             label="Start"
-            onPress={() => beforeStart()}
+            onPress={() => processStart()}
             disabled={!config || config.devices.length === 0 || isScanning}
             style={{
               position: 'absolute',

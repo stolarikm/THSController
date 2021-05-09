@@ -3,14 +3,15 @@ import { Menu, TextInput, TouchableRipple, useTheme } from 'react-native-paper';
 import React, { forwardRef, useEffect, useState } from 'react';
 
 /*
- * File from library react-native-paper-dropdown
+ * This file is imported from library react-native-paper-dropdown
  * https://github.com/fateh999/react-native-paper-dropdown
- * Extracted because of unresolved issue https://github.com/fateh999/react-native-paper-dropdown/issues/4
- * with waiting pull request with fix, therefore I included my own fix.
  *
- * There is also Select component added, to provide wrapper for DropDown, without need of tracking visibility state.
+ * We use this copy of the file, due to unresolved issue with no reponse
+ * https://github.com/fateh999/react-native-paper-dropdown/issues/4
+ *
+ * This file is slightly modified, firstly it includes the fix for the issue mentioned above.
+ * Secondly, there is a Select component, to provide wrapper for DropDown, without need of tracking visibility state.
  */
-
 const DropDown = forwardRef((props, ref) => {
   const activeTheme = useTheme();
   const {
@@ -35,15 +36,18 @@ const DropDown = forwardRef((props, ref) => {
     x: 0,
     y: 0,
   });
+
   const onLayout = (event) => {
     setInputLayout(event.nativeEvent.layout);
   };
+
   useEffect(() => {
     const _label = list.find((_) => _.value === value)?.label;
     if (_label) {
       setDisplayValue(_label);
     }
   }, [list, value]);
+
   return (
     <Menu
       visible={visible}
@@ -96,6 +100,13 @@ const DropDown = forwardRef((props, ref) => {
   );
 });
 
+/**
+ * Select component to wrap the DropDown with visible state managed
+ * @param  label label of the dropdown input
+ * @param  value currently selected value
+ * @param  setValue callback called when value is selected
+ * @param  data drop down options
+ */
 const Select = ({ label, value, setValue, data }) => {
   const [showDropDown, setShowDropDown] = useState(false);
 

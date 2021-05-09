@@ -2,6 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Button, Dialog, Portal, TextInput } from 'react-native-paper';
 import Toast from 'react-native-simple-toast';
 
+/**
+ * Dialog window for manual configuration of a new device
+ * @param updatedDevice reference to the device which is being updated, if any
+ * @param visible true if the modal is open
+ * @param close callback called on dialog dismiss
+ * @param confirm callback called on dialog confirm
+ * @param validate validation callback called before dialog confirm
+ */
 const NewDeviceDialog = ({
   updatedDevice,
   visible,
@@ -18,12 +26,18 @@ const NewDeviceDialog = ({
         }
   );
 
+  /**
+   * Set the updated device state
+   */
   useEffect(() => {
     if (updatedDevice) {
       setDevice(updatedDevice);
     }
   }, [updatedDevice]);
 
+  /**
+   * Clears the inputs
+   */
   const clear = () => {
     setDevice({
       name: '',
@@ -31,6 +45,10 @@ const NewDeviceDialog = ({
     });
   };
 
+  /**
+   * Process the confirm action
+   * Firstly calls validate, afterwards calls confirm
+   */
   const processConfirmation = () => {
     var validation = validate(device);
     if (!validation.ok) {
@@ -41,6 +59,10 @@ const NewDeviceDialog = ({
     clear();
   };
 
+  /**
+   * Process the close action
+   * Closes the dialog and clears the inputs
+   */
   const processClose = () => {
     close();
     clear();

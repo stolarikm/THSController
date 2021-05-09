@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StatusBar, StyleSheet, View, ScrollView, Text } from 'react-native';
-import NavigationBar from 'react-native-navbar-color';
+import { StyleSheet, View, ScrollView, Text } from 'react-native';
 import { TextInput, FAB } from 'react-native-paper';
 import { Select } from '../components/DropDown';
 import { Chip } from 'react-native-paper';
@@ -13,12 +12,11 @@ import FirebaseService from '../services/FirebaseService';
 import commandList from '../resources/commands.json';
 import NoDataComponent from '../components/NoDataComponent';
 
+/**
+ * Command screen component
+ * @param navigation navigation context
+ */
 export default function CommandsScreen({ navigation }) {
-  useEffect(() => {
-    StatusBar.setBackgroundColor('#005cb2');
-    NavigationBar.setColor('#005cb2');
-  }, []);
-
   const user = auth().currentUser;
   const [command, setCommand] = useState('');
   const [value, setValue] = useState('');
@@ -28,8 +26,10 @@ export default function CommandsScreen({ navigation }) {
   const [isLoading, setLoading] = useState(false);
   const [readings, setReadings] = useState({ devices: [] });
 
+  /**
+   * Sets the current screen name in config context
+   */
   useEffect(() => {
-    //TODO refactor
     const unsubscribe = navigation.addListener('focus', () => {
       let newConfig = {
         ...config,
@@ -37,10 +37,13 @@ export default function CommandsScreen({ navigation }) {
       };
       setConfig(newConfig);
     });
-
+    //cleanup
     return unsubscribe;
   }, [navigation, config]);
 
+  /**
+   * Registers a snapshot listener to the Firestore
+   */
   useEffect(() => {
     firestore().settings = {};
     var unsubscribe = firestore()
@@ -57,18 +60,33 @@ export default function CommandsScreen({ navigation }) {
     return unsubscribe;
   }, []);
 
+  /**
+   * Keeps track of canSend state depending on input values
+   * Sets canSend to true only if the command, value and targets are set
+   */
   useEffect(() => {
     setCanSend(command && targets.length !== 0 && (!command.domain || value));
   }, [command, value, targets]);
 
+  /**
+   * Clears value when command is changed
+   */
   useEffect(() => {
     setValue('');
   }, [command]);
 
+  /**
+   * Returns true if the target device is selected
+   * @param item target device
+   */
   const isSelected = (item) => {
     return targets.some((t) => t.ip === item.ip);
   };
 
+  /**
+   * Selects a target device
+   * @param item target device
+   */
   const select = (item) => {
     if (targets.some((t) => t.ip === item.ip)) {
       var newTargets = targets.filter((t) => t.ip !== item.ip);
@@ -79,6 +97,10 @@ export default function CommandsScreen({ navigation }) {
     setTargets(newTargets);
   };
 
+  /**
+   * Validates the inputs
+   * Returns { ok: true if validation passed, error: error message, if any }
+   */
   const validate = () => {
     if (command.domain) {
       if (command.domain.type === 'numeric') {
@@ -101,11 +123,18 @@ export default function CommandsScreen({ navigation }) {
     return { ok: true };
   };
 
+  /**
+   * Resets the inputs
+   */
   const reset = () => {
     setValue('');
     setTargets([]);
   };
 
+  /**
+   * Process the command send action
+   * Firstly validates, then enqueues the command
+   */
   const sendCommand = async () => {
     if (!canSend) {
       return;
@@ -129,6 +158,9 @@ export default function CommandsScreen({ navigation }) {
     Toast.show('Command successfully sent');
   };
 
+  /**
+   * Returns true if there are target devices available
+   */
   const devicesAvailable = () => {
     return readings && readings.devices && readings.devices.length > 0;
   };

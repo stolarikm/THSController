@@ -10,6 +10,10 @@ import { useOrientation } from '../hooks/useOrientation';
 
 const Tab = createMaterialBottomTabNavigator();
 
+/**
+ * Bottom-tab navigation component
+ * Navigates between three main screens
+ */
 const BottomDrawerNavigator = () => {
   const { config } = useConfig();
   const isPortrait = useOrientation();

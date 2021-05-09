@@ -5,6 +5,10 @@ import MainCompoment from './components/MainComponent';
 import ConfigProvider from './hooks/useConfig';
 import { navigationRef } from './services/NavigationService';
 
+/**
+ * Root application component
+ * Wraps the MainComponent inside of providers
+ */
 const App = () => {
   return (
     <ConfigProvider>

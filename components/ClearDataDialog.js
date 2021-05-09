@@ -3,13 +3,22 @@ import { Button, Dialog, Portal, Text } from 'react-native-paper';
 import FirebaseService from '../services/FirebaseService';
 import Toast from 'react-native-simple-toast';
 
+/**
+ * Dialog window asking user for consent to clear the readings from cloud
+ */
 const ClearDataDialog = ({ visible, hideDialog }) => {
+  /**
+   * Confirms the dialog and clears the data using FirebaseService
+   */
   const ok = async () => {
     await FirebaseService.clearData();
     Toast.show('Data successfully cleared');
     hideDialog();
   };
 
+  /**
+   * Discards the dialog
+   */
   const discard = () => {
     hideDialog();
   };

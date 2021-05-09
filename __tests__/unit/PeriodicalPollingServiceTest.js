@@ -3,6 +3,9 @@ import BackgroundService from 'react-native-background-actions';
 import FirebaseService from '../../services/FirebaseService';
 jest.mock('react-native/Libraries/EventEmitter/NativeEventEmitter');
 
+/**
+ * Unit tests for PeriodicalPollingService module
+ */
 it('creates timeout task correctly', async () => {
   const fn = jest.fn();
   await expect(PeriodicalPollingService.timeoutTask(fn, 1000)).resolves.toEqual(
