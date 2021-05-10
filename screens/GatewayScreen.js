@@ -1,20 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
-import AsyncStorage from '@react-native-community/async-storage';
-import { FAB, Card, Title, Paragraph, IconButton } from 'react-native-paper';
-import { useConfig } from '../hooks/useConfig';
-import NewDeviceDialog from '../components/NewDeviceDialog';
-import PeriodicalPollingService from '../services/PeriodicalPollingService';
-import ModbusService from '../services/ModbusService';
-import NetworkScanService from '../services/NetworkScanService';
-import { ActivityIndicator } from 'react-native';
-import FirebaseService from '../services/FirebaseService';
-import Toast from 'react-native-simple-toast';
-import { Icon } from 'react-native-elements';
-import LoadingOverlay from '../components/LoadingOverlay';
-import firestore from '@react-native-firebase/firestore';
-import RestartGatewayDataDialog from '../components/RestartGatewayDataDialog';
-import Constants from '../resources/Constants';
+import React, { useEffect, useState } from "react";
+import { StyleSheet, View, ScrollView } from "react-native";
+import AsyncStorage from "@react-native-community/async-storage";
+import { FAB, Card, Title, Paragraph, IconButton } from "react-native-paper";
+import { useConfig } from "../hooks/useConfig";
+import NewDeviceDialog from "../components/NewDeviceDialog";
+import BackgroundTaskService from "../services/BackgroundTaskService";
+import ModbusService from "../services/ModbusService";
+import NetworkScanService from "../services/NetworkScanService";
+import { ActivityIndicator } from "react-native";
+import FirebaseService from "../services/FirebaseService";
+import Toast from "react-native-simple-toast";
+import { Icon } from "react-native-elements";
+import LoadingOverlay from "../components/LoadingOverlay";
+import firestore from "@react-native-firebase/firestore";
+import RestartGatewayDataDialog from "../components/RestartGatewayDataDialog";
+import Constants from "../resources/Constants";
 
 /**
  * Gateway screen component
@@ -25,9 +25,7 @@ export default function GatewayScreen({ navigation }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [restartModalOpen, setRestartModalOpen] = useState(false);
   const [editedDevice, setEditedDevice] = useState(null);
-  const [isRunning, setRunning] = useState(
-    PeriodicalPollingService.isRunning()
-  );
+  const [isRunning, setRunning] = useState(BackgroundTaskService.isRunning());
   const [isScanning, setScanning] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [currentDevice, setCurrentDevice] = useState(null);
@@ -37,10 +35,10 @@ export default function GatewayScreen({ navigation }) {
    * Sets the current screen name in config context
    */
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
+    const unsubscribe = navigation.addListener("focus", () => {
       let newConfig = {
         ...config,
-        screenName: 'Gateway',
+        screenName: "Gateway",
       };
       setConfig(newConfig);
     });
@@ -61,8 +59,8 @@ export default function GatewayScreen({ navigation }) {
       if (isRunning) {
         setLoading(true);
         let timeout = parseInt(config.gatewayInterval);
-        await PeriodicalPollingService.stop();
-        await PeriodicalPollingService.start(
+        await BackgroundTaskService.stop();
+        await BackgroundTaskService.start(
           () => gatewayServiceTask(config.devices),
           timeout * 1000
         );
@@ -103,16 +101,16 @@ export default function GatewayScreen({ navigation }) {
    */
   const getDeviceColor = (ip) => {
     if (isRunning && currentDevice === ip) {
-      return 'orange';
+      return "orange";
     }
     if (isRunning && states[ip]) {
       if (states[ip].success) {
-        return 'green';
+        return "green";
       } else {
-        return 'red';
+        return "red";
       }
     }
-    return 'grey';
+    return "grey";
   };
 
   /**
@@ -140,7 +138,7 @@ export default function GatewayScreen({ navigation }) {
    * @param ip input
    */
   const validateIp = (ip) => {
-    let parts = ip.split('.');
+    let parts = ip.split(".");
     if (parts.length !== 4) {
       return false;
     }
@@ -162,25 +160,25 @@ export default function GatewayScreen({ navigation }) {
    */
   const validate = (device) => {
     if (!device.name) {
-      return { ok: false, error: 'Please provide a device name' };
+      return { ok: false, error: "Please provide a device name" };
     }
     if (!device.ip) {
-      return { ok: false, error: 'Please provide a device IP address' };
+      return { ok: false, error: "Please provide a device IP address" };
     }
     if (!validateIp(device.ip)) {
-      return { ok: false, error: 'Please provide a valid IP adress' };
+      return { ok: false, error: "Please provide a valid IP adress" };
     }
     if (
       config.devices.some((d) => d.name === device.name) &&
       (!editedDevice || device.name !== editedDevice.name)
     ) {
-      return { ok: false, error: 'Device with this name already exists' };
+      return { ok: false, error: "Device with this name already exists" };
     }
     if (
       config.devices.some((d) => d.ip === device.ip) &&
       (!editedDevice || device.ip !== editedDevice.ip)
     ) {
-      return { ok: false, error: 'Device with this address already exists' };
+      return { ok: false, error: "Device with this address already exists" };
     }
     return { ok: true };
   };
@@ -234,18 +232,18 @@ export default function GatewayScreen({ navigation }) {
       fallbackToClientMode();
       setLoading(false);
       Toast.show(
-        'Can not start gateway service, another gateway device already present. Falling back to client mode',
+        "Can not start gateway service, another gateway device already present. Falling back to client mode",
         Toast.LONG
       );
       return;
     }
     let timeout = parseInt(config.gatewayInterval);
     if (config.devices.length > 0) {
-      await PeriodicalPollingService.start(
+      await BackgroundTaskService.start(
         () => gatewayServiceTask(config.devices),
         timeout * 1000
       );
-      Toast.show('Gateway service started');
+      Toast.show("Gateway service started");
       setRunning(true);
     }
     setLoading(false);
@@ -258,11 +256,11 @@ export default function GatewayScreen({ navigation }) {
   const fallbackToClientMode = () => {
     let newConfig = {
       ...config,
-      mode: 'client',
+      mode: "client",
     };
     setConfig(newConfig);
-    AsyncStorage.setItem(Constants.MODE, 'client');
-    navigation.replace('BottomDrawerNavigator', { screen: 'Monitor' });
+    AsyncStorage.setItem(Constants.MODE, "client");
+    navigation.replace("BottomDrawerNavigator", { screen: "Monitor" });
   };
 
   /**
@@ -271,8 +269,8 @@ export default function GatewayScreen({ navigation }) {
   const onStop = async () => {
     setLoading(true);
     resetState();
-    await PeriodicalPollingService.stop();
-    Toast.show('Gateway service stopped');
+    await BackgroundTaskService.stop();
+    Toast.show("Gateway service stopped");
     setRunning(false);
     setLoading(false);
   };
@@ -299,10 +297,8 @@ export default function GatewayScreen({ navigation }) {
       for (sensor of sensors) {
         setCurrentDevice(sensor.ip);
         try {
-          var {
-            temperature,
-            humidity,
-          } = await ModbusService.readTemperatureAndHumidity(sensor.ip, port);
+          var { temperature, humidity } =
+            await ModbusService.readTemperatureAndHumidity(sensor.ip, port);
           success(sensor.ip, true);
           var data = {
             name: sensor.name,
@@ -415,10 +411,10 @@ export default function GatewayScreen({ navigation }) {
             onPress={() => processStart()}
             disabled={!config || config.devices.length === 0 || isScanning}
             style={{
-              position: 'absolute',
+              position: "absolute",
               top: 30,
-              marginLeft: 'auto',
-              marginRight: 'auto',
+              marginLeft: "auto",
+              marginRight: "auto",
             }}
           />
         )}
@@ -428,20 +424,20 @@ export default function GatewayScreen({ navigation }) {
             label="Stop"
             onPress={() => onStop()}
             style={{
-              position: 'absolute',
+              position: "absolute",
               top: 30,
-              marginLeft: 'auto',
-              marginRight: 'auto',
+              marginLeft: "auto",
+              marginRight: "auto",
             }}
           />
         )}
-        <View style={{ flex: 4, flexDirection: 'row', marginTop: 100 }}>
-          <ScrollView contentContainerStyle={{ alignItems: 'center' }}>
+        <View style={{ flex: 4, flexDirection: "row", marginTop: 100 }}>
+          <ScrollView contentContainerStyle={{ alignItems: "center" }}>
             <View
               style={{
-                flexDirection: 'row',
-                flexWrap: 'wrap',
-                justifyContent: 'center',
+                flexDirection: "row",
+                flexWrap: "wrap",
+                justifyContent: "center",
               }}
             >
               {config &&
@@ -449,12 +445,12 @@ export default function GatewayScreen({ navigation }) {
                   return (
                     <Card
                       key={index}
-                      style={{ margin: 5, height: 98, width: '45%' }}
+                      style={{ margin: 5, height: 98, width: "45%" }}
                     >
                       <Card.Content>
-                        <View style={{ flexDirection: 'row' }}>
+                        <View style={{ flexDirection: "row" }}>
                           <View style={{ flex: 9 }}>
-                            <View style={{ flexDirection: 'row' }}>
+                            <View style={{ flexDirection: "row" }}>
                               <Icon
                                 name="fiber-manual-record"
                                 size={15}
@@ -470,8 +466,8 @@ export default function GatewayScreen({ navigation }) {
                           <View
                             style={{
                               flex: 2,
-                              alignItems: 'flex-start',
-                              justifyContent: 'flex-end',
+                              alignItems: "flex-start",
+                              justifyContent: "flex-end",
                               marginTop: 80,
                             }}
                           >
@@ -517,19 +513,19 @@ export default function GatewayScreen({ navigation }) {
           }}
           disabled={isScanning || isRunning}
           style={{
-            position: 'absolute',
+            position: "absolute",
             margin: 30,
             right: 0,
             bottom: 0,
           }}
         />
         <FAB
-          icon={isScanning ? 'stop' : 'sync'}
-          label={isScanning ? 'Stop' : 'Scan'}
+          icon={isScanning ? "stop" : "sync"}
+          label={isScanning ? "Stop" : "Scan"}
           onPress={onAutoScan}
           disabled={isRunning}
           style={{
-            position: 'absolute',
+            position: "absolute",
             margin: 30,
             left: 0,
             bottom: 0,
@@ -559,8 +555,8 @@ export default function GatewayScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fafafa',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#fafafa",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

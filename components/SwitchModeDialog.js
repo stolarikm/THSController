@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
-import { Button, Dialog, Portal, RadioButton } from 'react-native-paper';
-import { useConfig } from '../hooks/useConfig';
-import FirebaseService from '../services/FirebaseService';
-import Toast from 'react-native-simple-toast';
-import AsyncStorage from '@react-native-community/async-storage';
-import PeriodicalPollingService from '../services/PeriodicalPollingService';
-import Constants from '../resources/Constants';
+import React, { useEffect } from "react";
+import { Button, Dialog, Portal, RadioButton } from "react-native-paper";
+import { useConfig } from "../hooks/useConfig";
+import FirebaseService from "../services/FirebaseService";
+import Toast from "react-native-simple-toast";
+import AsyncStorage from "@react-native-community/async-storage";
+import BackgroundTaskService from "../services/BackgroundTaskService";
+import Constants from "../resources/Constants";
 
 /**
  * Dialog window with switch application mode options
@@ -31,19 +31,19 @@ const SwitchModeDialog = ({ visible, hideDialog }) => {
    * Saves the new mode to async storage and config context
    */
   const ok = async () => {
-    if (mode === 'client' && PeriodicalPollingService.isRunning()) {
+    if (mode === "client" && BackgroundTaskService.isRunning()) {
       Toast.show(
-        'Can not switch to client mode while gateway service is running',
+        "Can not switch to client mode while gateway service is running",
         Toast.LONG
       );
       return;
     }
     if (
-      mode === 'gateway' &&
+      mode === "gateway" &&
       !(await FirebaseService.isGatewayLockAvailable())
     ) {
       Toast.show(
-        'Can not switch to gateway mode, another gateway device already present',
+        "Can not switch to gateway mode, another gateway device already present",
         Toast.LONG
       );
       return;
@@ -79,7 +79,7 @@ const SwitchModeDialog = ({ visible, hideDialog }) => {
             <RadioButton.Item label="Gateway mode" value="gateway" />
           </RadioButton.Group>
         </Dialog.Content>
-        <Dialog.Actions style={{ justifyContent: 'space-between' }}>
+        <Dialog.Actions style={{ justifyContent: "space-between" }}>
           <Button onPress={discard}>Cancel</Button>
           <Button onPress={ok}>OK</Button>
         </Dialog.Actions>
