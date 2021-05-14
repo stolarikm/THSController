@@ -12,7 +12,7 @@ const getInitialOrientation = () => {
 
 /**
  * Hook returning a flag indicating if the screen is oriented portrait or not
- * Inspired by: https://stackoverflow.com/questions/47683591/react-native-different-styles-applied-on-orientation-change
+ * Adapted from: https://stackoverflow.com/questions/47683591/react-native-different-styles-applied-on-orientation-change
  */
 export function useOrientation() {
   const [isPortrait, setIsPortrait] = useState(getInitialOrientation());
